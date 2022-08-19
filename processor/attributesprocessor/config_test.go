@@ -214,27 +214,34 @@ func TestLoadingConfig(t *testing.T) {
 }
 
 func TestConfigActionBuilders(t *testing.T) {
-	baseCfg := &Config{ProcessorSettings: config.NewProcessorSettings(config.NewComponentIDWithName(typeStr, "insert"))}
-	baseCfg.AddInsertAction("attribute2", 456, "", "", "", "")
-	baseCfg.AddInsertAction("attribute3", nil, "", "", "sinkId", "")
-	baseCfg.AddInsertAction("attribute4", nil, "", "attribute2*", "", "")
-	baseCfg.AddConvertAction("attribute5", nil, "attribute*", "", "", "string")
-	baseCfg.AddHashAction("attribute6", nil, "", "attribute5", "", "")
-	baseCfg.AddUpdateAction("attribute7", "789", "", "", "", "")
-	baseCfg.AddDeleteAction("attribute8", nil, "", "", "", "")
+	baseCfg := &Config{}
+	baseCfg.AddInsertActionKeyValue("attribute1", 456)
+	baseCfg.AddInsertActionFromContext("attribute2", "sinkId")
+	baseCfg.AddInsertActionFromAttribute("attribute3", "attribute2")
+	baseCfg.AddConvertAction("attribute4", "string")
+	baseCfg.AddHashAction("attribute5")
+	baseCfg.AddUpdateActionKeyValue("attribute6", 456)
+	baseCfg.AddUpdateActionFromContext("attribute7", "sinkId")
+	baseCfg.AddUpdateActionFromAttribute("attribute8", "attribute2")
+	baseCfg.AddDeleteActionKey("attribute9")
+	baseCfg.AddUpsertActionKeyValue("attribute10", 456)
+	baseCfg.AddUpsertActionFromContext("attribute11", "sinkId")
+	baseCfg.AddUpsertActionFromAttribute("attribute12", "attribute2")
 	assert.Equal(t, baseCfg, &Config{
-		ProcessorSettings: config.NewProcessorSettings(config.NewComponentIDWithName(typeStr, "insert")),
 		Settings: attraction.Settings{
 			Actions: []attraction.ActionKeyValue{
 				{Key: "attribute1", Value: 123, Action: attraction.INSERT},
-				{Key: "attribute2", Value: 456, Action: attraction.INSERT},
-				{Key: "attribute3", FromContext: "sinkId", Action: attraction.INSERT},
-				{Key: "attribute4", FromAttribute: "attribute2*", Action: attraction.INSERT},
-				{Key: "attribute5", ConvertedType: "string", Action: attraction.CONVERT},
-				{Key: "attribute6", ConvertedType: "string", FromAttribute: "attribute5", Action: attraction.HASH},
-				{Key: "attribute7", Value: "789", Action: attraction.UPDATE},
-				{Key: "attribute8", Action: attraction.DELETE},
-				{Key: "string key", FromAttribute: "anotherkey", Action: attraction.INSERT},
+				{Key: "attribute2", FromContext: "sinkId", Action: attraction.INSERT},
+				{Key: "attribute3", FromAttribute: "attribute2*", Action: attraction.INSERT},
+				{Key: "attribute4", ConvertedType: "string", Action: attraction.CONVERT},
+				{Key: "attribute5", Action: attraction.HASH},
+				{Key: "attribute6", Value: "789", Action: attraction.UPDATE},
+				{Key: "attribute7", FromContext: "sinkId", Action: attraction.UPDATE},
+				{Key: "attribute8", FromAttribute: "attribute2", Action: attraction.UPDATE},
+				{Key: "attribute9", Action: attraction.DELETE},
+				{Key: "attribute10", Value: 123, Action: attraction.UPSERT},
+				{Key: "attribute11", FromContext: "sinkId", Action: attraction.UPSERT},
+				{Key: "attribute12", FromAttribute: "attribute2*", Action: attraction.UPSERT},
 			},
 		},
 	})

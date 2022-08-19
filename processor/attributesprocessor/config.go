@@ -15,7 +15,6 @@
 package attributesprocessor // import "github.com/open-telemetry/opentelemetry-collector-contrib/processor/attributesprocessor"
 
 import (
-	"errors"
 	"go.opentelemetry.io/collector/config"
 
 	"github.com/open-telemetry/opentelemetry-collector-contrib/internal/coreinternal/attraction"
@@ -47,69 +46,104 @@ func (cfg *Config) Validate() error {
 	return nil
 }
 
-func (cfg *Config) actionBuilder(key string, value interface{}, regexPattern, fromAttribute, fromContext, convertedType, action string) (newAction attraction.ActionKeyValue, err error) {
-	if value == nil || fromAttribute == "" || fromContext == "" {
-		return attraction.ActionKeyValue{}, errors.New("failed to create action, one value must be attributed")
-	}
-	return attraction.ActionKeyValue{
-		Key:           key,
-		Value:         value,
-		RegexPattern:  regexPattern,
-		FromAttribute: fromAttribute,
-		FromContext:   fromContext,
-		ConvertedType: convertedType,
-		Action:        attraction.Action(action),
-	}, nil
-}
-
-func (cfg *Config) AddInsertAction(key string, value interface{}, regexPattern, attributeMatcher, contextMatcher, convertedType string) (ok bool) {
-	newAction, err := cfg.actionBuilder(key, value, regexPattern, attributeMatcher, contextMatcher, convertedType, "insert")
-	if err != nil {
-		return false
-	}
-	cfg.Actions = cfg.AppendAction(newAction)
-	return true
-}
-
-func (cfg *Config) AppendAction(newAction attraction.ActionKeyValue) []attraction.ActionKeyValue {
+func (cfg *Config) appendAction(newAction attraction.ActionKeyValue) []attraction.ActionKeyValue {
 	if cfg.Actions == nil {
 		cfg.Actions = []attraction.ActionKeyValue{}
 	}
 	return append(cfg.Actions, newAction)
 }
 
-func (cfg *Config) AddDeleteAction(key string, value interface{}, regexPattern, attributeMatcher, contextMatcher, convertedType string) (ok bool) {
-	newAction, err := cfg.actionBuilder(key, value, regexPattern, attributeMatcher, contextMatcher, convertedType, "delete")
-	if err != nil {
-		return false
+func (cfg *Config) keyValueEntry(key string, value interface{}, action attraction.Action) bool {
+	newAction := attraction.ActionKeyValue{
+		Key:    key,
+		Value:  value,
+		Action: action,
 	}
-	cfg.Actions = append(cfg.Actions, newAction)
+	cfg.Actions = cfg.appendAction(newAction)
 	return true
 }
 
-func (cfg *Config) AddUpdateAction(key string, value interface{}, regexPattern, attributeMatcher, contextMatcher, convertedType string) (ok bool) {
-	newAction, err := cfg.actionBuilder(key, value, regexPattern, attributeMatcher, contextMatcher, convertedType, "update")
-	if err != nil {
-		return false
+func (cfg *Config) keyFromContextEntry(key string, fromContext string, action attraction.Action) bool {
+	newAction := attraction.ActionKeyValue{
+		Key:         key,
+		FromContext: fromContext,
+		Action:      action,
 	}
-	cfg.Actions = append(cfg.Actions, newAction)
+	cfg.Actions = cfg.appendAction(newAction)
 	return true
 }
 
-func (cfg *Config) AddConvertAction(key string, value interface{}, regexPattern, attributeMatcher, contextMatcher, convertedType string) (ok bool) {
-	newAction, err := cfg.actionBuilder(key, value, regexPattern, attributeMatcher, contextMatcher, convertedType, "update")
-	if err != nil {
-		return false
+func (cfg *Config) keyFromAttributeEntry(key string, fromAttribute string, action attraction.Action) bool {
+	newAction := attraction.ActionKeyValue{
+		Key:           key,
+		FromAttribute: fromAttribute,
+		Action:        action,
 	}
-	cfg.Actions = append(cfg.Actions, newAction)
+	cfg.Actions = cfg.appendAction(newAction)
 	return true
 }
 
-func (cfg *Config) AddHashAction(key string, value interface{}, regexPattern, attributeMatcher, contextMatcher, convertedType string) (ok bool) {
-	newAction, err := cfg.actionBuilder(key, value, regexPattern, attributeMatcher, contextMatcher, convertedType, "update")
-	if err != nil {
-		return false
+func (cfg *Config) AddInsertActionKeyValue(key string, value interface{}) (ok bool) {
+	return cfg.keyValueEntry(key, value, attraction.INSERT)
+}
+
+func (cfg *Config) AddInsertActionFromContext(key, fromContext string) (ok bool) {
+	return cfg.keyFromContextEntry(key, fromContext, attraction.INSERT)
+}
+
+func (cfg *Config) AddInsertActionFromAttribute(key, fromAttribute string) (ok bool) {
+	return cfg.keyFromAttributeEntry(key, fromAttribute, attraction.INSERT)
+}
+
+func (cfg *Config) AddUpsertActionKeyValue(key string, value interface{}) (ok bool) {
+	return cfg.keyValueEntry(key, value, attraction.UPSERT)
+}
+
+func (cfg *Config) AddUpsertActionFromAttribute(key, fromAttribute string) (ok bool) {
+	return cfg.keyFromAttributeEntry(key, fromAttribute, attraction.UPSERT)
+}
+
+func (cfg *Config) AddUpsertActionFromContext(key, fromContext string) (ok bool) {
+	return cfg.keyFromContextEntry(key, fromContext, attraction.UPSERT)
+}
+
+func (cfg *Config) AddUpdateActionKeyValue(key string, value interface{}) (ok bool) {
+	return cfg.keyValueEntry(key, value, attraction.UPDATE)
+}
+
+func (cfg *Config) AddUpdateActionFromAttribute(key, fromAttribute string) (ok bool) {
+	return cfg.keyFromAttributeEntry(key, fromAttribute, attraction.UPDATE)
+}
+
+func (cfg *Config) AddUpdateActionFromContext(key, fromContext string) (ok bool) {
+	return cfg.keyFromContextEntry(key, fromContext, attraction.UPDATE)
+}
+
+func (cfg *Config) AddDeleteActionKey(key string) (ok bool) {
+	newAction := attraction.ActionKeyValue{
+		Key:    key,
+		Action: attraction.DELETE,
 	}
-	cfg.Actions = append(cfg.Actions, newAction)
+	cfg.Actions = cfg.appendAction(newAction)
+
+	return true
+}
+
+func (cfg *Config) AddConvertAction(key, convertedType string) (ok bool) {
+	newAction := attraction.ActionKeyValue{
+		Key:           key,
+		ConvertedType: convertedType,
+		Action:        attraction.CONVERT,
+	}
+	cfg.Actions = cfg.appendAction(newAction)
+	return true
+}
+
+func (cfg *Config) AddHashAction(key string) (ok bool) {
+	newAction := attraction.ActionKeyValue{
+		Key:    key,
+		Action: attraction.HASH,
+	}
+	cfg.Actions = cfg.appendAction(newAction)
 	return true
 }
