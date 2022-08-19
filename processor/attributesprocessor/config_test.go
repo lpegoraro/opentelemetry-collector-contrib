@@ -215,16 +215,16 @@ func TestLoadingConfig(t *testing.T) {
 
 func TestConfigActionBuilders(t *testing.T) {
 	baseCfg := &Config{}
-	baseCfg.AddInsertActionKeyValue("attribute1", 456)
+	baseCfg.AddInsertActionKeyValue("attribute1", 123)
 	baseCfg.AddInsertActionFromContext("attribute2", "sinkId")
 	baseCfg.AddInsertActionFromAttribute("attribute3", "attribute2")
 	baseCfg.AddConvertAction("attribute4", "string")
 	baseCfg.AddHashAction("attribute5")
-	baseCfg.AddUpdateActionKeyValue("attribute6", 456)
+	baseCfg.AddUpdateActionKeyValue("attribute6", "789")
 	baseCfg.AddUpdateActionFromContext("attribute7", "sinkId")
 	baseCfg.AddUpdateActionFromAttribute("attribute8", "attribute2")
 	baseCfg.AddDeleteActionKey("attribute9")
-	baseCfg.AddUpsertActionKeyValue("attribute10", 456)
+	baseCfg.AddUpsertActionKeyValue("attribute10", 123)
 	baseCfg.AddUpsertActionFromContext("attribute11", "sinkId")
 	baseCfg.AddUpsertActionFromAttribute("attribute12", "attribute2")
 	assert.Equal(t, baseCfg, &Config{
@@ -232,7 +232,7 @@ func TestConfigActionBuilders(t *testing.T) {
 			Actions: []attraction.ActionKeyValue{
 				{Key: "attribute1", Value: 123, Action: attraction.INSERT},
 				{Key: "attribute2", FromContext: "sinkId", Action: attraction.INSERT},
-				{Key: "attribute3", FromAttribute: "attribute2*", Action: attraction.INSERT},
+				{Key: "attribute3", FromAttribute: "attribute2", Action: attraction.INSERT},
 				{Key: "attribute4", ConvertedType: "string", Action: attraction.CONVERT},
 				{Key: "attribute5", Action: attraction.HASH},
 				{Key: "attribute6", Value: "789", Action: attraction.UPDATE},
@@ -241,7 +241,7 @@ func TestConfigActionBuilders(t *testing.T) {
 				{Key: "attribute9", Action: attraction.DELETE},
 				{Key: "attribute10", Value: 123, Action: attraction.UPSERT},
 				{Key: "attribute11", FromContext: "sinkId", Action: attraction.UPSERT},
-				{Key: "attribute12", FromAttribute: "attribute2*", Action: attraction.UPSERT},
+				{Key: "attribute12", FromAttribute: "attribute2", Action: attraction.UPSERT},
 			},
 		},
 	})
