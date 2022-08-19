@@ -67,8 +67,15 @@ func (cfg *Config) AddInsertAction(key string, value interface{}, regexPattern, 
 	if err != nil {
 		return false
 	}
-	cfg.Actions = append(cfg.Actions, newAction)
+	cfg.Actions = cfg.AppendAction(newAction)
 	return true
+}
+
+func (cfg *Config) AppendAction(newAction attraction.ActionKeyValue) []attraction.ActionKeyValue {
+	if cfg.Actions == nil {
+		cfg.Actions = []attraction.ActionKeyValue{}
+	}
+	return append(cfg.Actions, newAction)
 }
 
 func (cfg *Config) AddDeleteAction(key string, value interface{}, regexPattern, attributeMatcher, contextMatcher, convertedType string) (ok bool) {
