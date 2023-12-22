@@ -110,6 +110,9 @@ func (h *httpmetricScraper) scrape(ctx context.Context) (pmetric.Metrics, error)
 					}
 				}
 			}
+			if err == nil && len(h.cfg.Targets[targetIndex].Tags) > 0 {
+				h.mb.NewResourceBuilder().SetTags(h.cfg.Targets[targetIndex].Tags)
+			}
 			mux.Unlock()
 		}(client, idx)
 	}

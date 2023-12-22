@@ -43,8 +43,8 @@ func createMetricsReceiver(_ context.Context, params receiver.CreateSettings, rC
 		return nil, errConfigNotHTTPCheck
 	}
 
-	httpcheckScraper := newScraper(cfg, params)
-	scraper, err := scraperhelper.NewScraper(metadata.Type, httpcheckScraper.scrape, scraperhelper.WithStart(httpcheckScraper.start))
+	httpmetricsScraper := newScraper(cfg, params)
+	scraper, err := scraperhelper.NewScraper(metadata.Type, httpmetricsScraper.scrape, scraperhelper.WithStart(httpmetricsScraper.start))
 	if err != nil {
 		return nil, err
 	}

@@ -30,11 +30,11 @@ type Config struct {
 
 type targetConfig struct {
 	confighttp.HTTPClientSettings `mapstructure:",squash"`
-	Method                        string            `mapstructure:"method"`
-	FollowRedirects               bool              `mapstructure:"follow_redirects"`
-	FailIfNotTLS                  bool              `mapstructure:"fail_if_not_tls"`
-	Tags                          map[string]string `mapstructure:"tags"`
-	ContainsText                  []string          `mapstructure:"contains_text"`
+	Method                        string         `mapstructure:"method"`
+	FollowRedirects               bool           `mapstructure:"follow_redirects"`
+	FailIfNotTLS                  bool           `mapstructure:"fail_if_not_tls"`
+	Tags                          map[string]any `mapstructure:"tags"`
+	ContainsText                  []string       `mapstructure:"contains_text"`
 }
 
 // Validate validates the configuration by checking for missing or invalid fields
