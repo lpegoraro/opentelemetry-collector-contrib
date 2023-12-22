@@ -28,7 +28,7 @@ func (m *metricHttpmetricContentCount) init() {
 	m.data.Sum().DataPoints().EnsureCapacity(m.capacity)
 }
 
-func (m *metricHttpmetricContentCount) recordDataPoint(start pcommon.Timestamp, ts pcommon.Timestamp, val int64, httpURLAttributeValue string, containsTextAttributeValue string) {
+func (m *metricHttpmetricContentCount) recordDataPoint(start pcommon.Timestamp, ts pcommon.Timestamp, val int64, httpURLAttributeValue string, containsTextAttributeValue []any) {
 	if !m.config.Enabled {
 		return
 	}
@@ -37,7 +37,7 @@ func (m *metricHttpmetricContentCount) recordDataPoint(start pcommon.Timestamp, 
 	dp.SetTimestamp(ts)
 	dp.SetIntValue(val)
 	dp.Attributes().PutStr("http.url", httpURLAttributeValue)
-	dp.Attributes().PutStr("contains_text", containsTextAttributeValue)
+	dp.Attributes().PutEmptySlice("contains_text").FromRaw(containsTextAttributeValue)
 }
 
 // updateCapacity saves max length of data point slices that will be used for the slice capacity.
@@ -346,7 +346,7 @@ func (mb *MetricsBuilder) Emit(rmo ...ResourceMetricsOption) pmetric.Metrics {
 }
 
 // RecordHttpmetricContentCountDataPoint adds a data point to httpmetric.content_count metric.
-func (mb *MetricsBuilder) RecordHttpmetricContentCountDataPoint(ts pcommon.Timestamp, val int64, httpURLAttributeValue string, containsTextAttributeValue string) {
+func (mb *MetricsBuilder) RecordHttpmetricContentCountDataPoint(ts pcommon.Timestamp, val int64, httpURLAttributeValue string, containsTextAttributeValue []any) {
 	mb.metricHttpmetricContentCount.recordDataPoint(mb.startTime, ts, val, httpURLAttributeValue, containsTextAttributeValue)
 }
 

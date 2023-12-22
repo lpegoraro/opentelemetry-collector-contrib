@@ -32,7 +32,7 @@ attributes:
     type: string
   contains_text:
     description: List of single-word texts to be searched on the response body
-    type: string
+    type: slice
 
 metrics:
   httpmetric.status:

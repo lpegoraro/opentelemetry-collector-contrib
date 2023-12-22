@@ -57,7 +57,7 @@ func TestMetricsBuilder(t *testing.T) {
 
 			defaultMetricsCount++
 			allMetricsCount++
-			mb.RecordHttpmetricContentCountDataPoint(ts, 1, "http.url-val", "contains_text-val")
+			mb.RecordHttpmetricContentCountDataPoint(ts, 1, "http.url-val", []any{"contains_text-item1", "contains_text-item2"})
 
 			defaultMetricsCount++
 			allMetricsCount++
@@ -114,7 +114,7 @@ func TestMetricsBuilder(t *testing.T) {
 					assert.EqualValues(t, "http.url-val", attrVal.Str())
 					attrVal, ok = dp.Attributes().Get("contains_text")
 					assert.True(t, ok)
-					assert.EqualValues(t, "contains_text-val", attrVal.Str())
+					assert.EqualValues(t, []any{"contains_text-item1", "contains_text-item2"}, attrVal.Slice().AsRaw())
 				case "httpmetric.duration":
 					assert.False(t, validatedMetrics["httpmetric.duration"], "Found a duplicate in the metrics slice: httpmetric.duration")
 					validatedMetrics["httpmetric.duration"] = true

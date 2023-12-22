@@ -25,7 +25,7 @@ Counts the number of hits on each text on config.
 | Name | Description | Values |
 | ---- | ----------- | ------ |
 | http.url | Full HTTP request URL. | Any Str |
-| contains_text | List of single-word texts to be searched on the response body | Any Str |
+| contains_text | List of single-word texts to be searched on the response body | Any Slice |
 
 ### httpmetric.duration
 
