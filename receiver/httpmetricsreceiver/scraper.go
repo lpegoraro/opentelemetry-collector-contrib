@@ -36,10 +36,15 @@ type httpmetricScraper struct {
 
 // start starts the scraper by creating a new HTTP Client on the scraper
 func (h *httpmetricScraper) start(_ context.Context, host component.Host) (err error) {
-	for _, target := range h.cfg.Targets {
-		client, clentErr := target.ToClient(host, h.settings)
-		if clentErr != nil {
-			err = multierr.Append(err, clentErr)
+	for targetIndex, target := range h.cfg.Targets {
+		client, clientErr := target.ToClient(host, h.settings)
+		if clientErr != nil {
+			err = multierr.Append(err, clientErr)
+		}
+		if h.cfg.Targets[targetIndex].FollowRedirects {
+			client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			}
 		}
 		h.clients = append(h.clients, client)
 	}
@@ -61,7 +66,9 @@ func (h *httpmetricScraper) scrape(ctx context.Context) (pmetric.Metrics, error)
 			defer wg.Done()
 
 			now := pcommon.NewTimestampFromTime(time.Now())
+			if h.cfg.Targets[targetIndex].FollowRedirects {
 
+			}
 			req, err := http.NewRequestWithContext(ctx, h.cfg.Targets[targetIndex].Method, h.cfg.Targets[targetIndex].Endpoint, http.NoBody)
 			if err != nil {
 				h.settings.Logger.Error("failed to create request", zap.String("target endpoint", h.cfg.Targets[targetIndex].Endpoint), zap.Error(err))
@@ -72,8 +79,11 @@ func (h *httpmetricScraper) scrape(ctx context.Context) (pmetric.Metrics, error)
 			resp, err := targetClient.Do(req)
 			mux.Lock()
 			h.mb.RecordHttpmetricDurationDataPoint(now, time.Since(start).Milliseconds(), h.cfg.Targets[targetIndex].Endpoint)
-			//wasTLS := resp.TLS.HandshakeComplete
-			//h.mb.RecordHttpmetricTlsDataPoint(now, int64(1), h.cfg.Targets[targetIndex].Endpoint, wasTLS)
+			if resp.TLS.HandshakeComplete {
+				h.mb.RecordHttpmetricTLSDataPoint(now, int64(1), h.cfg.Targets[targetIndex].Endpoint)
+			} else {
+				h.mb.RecordHttpmetricTLSDataPoint(now, int64(0), h.cfg.Targets[targetIndex].Endpoint)
+			}
 			statusCode := 0
 			if err != nil {
 				h.mb.RecordHttpmetricErrorDataPoint(now, int64(1), h.cfg.Targets[targetIndex].Endpoint, err.Error())
