@@ -64,7 +64,7 @@ func (h *httpmetricScraper) scrape(ctx context.Context) (pmetric.Metrics, error)
 
 			req, err := http.NewRequestWithContext(ctx, h.cfg.Targets[targetIndex].Method, h.cfg.Targets[targetIndex].Endpoint, http.NoBody)
 			if err != nil {
-				h.settings.Logger.Error("failed to create request", zap.Error(err))
+				h.settings.Logger.Error("failed to create request", zap.String("target endpoint", h.cfg.Targets[targetIndex].Endpoint), zap.Error(err))
 				return
 			}
 
@@ -88,14 +88,15 @@ func (h *httpmetricScraper) scrape(ctx context.Context) (pmetric.Metrics, error)
 				}
 			}
 
-			body, err := io.ReadAll(resp.Body)
-			if err != nil {
-				h.mb.RecordHttpmetricErrorDataPoint(now, int64(1), h.cfg.Targets[targetIndex].Endpoint, err.Error())
-			} else {
-				bodyAsStr := string(body)
-				for _, text := range h.cfg.Targets[targetIndex].ContainsText {
-					count := strings.Count(bodyAsStr, text)
-					h.mb.RecordHttpmetricContentCountDataPoint(now, int64(count), h.cfg.Targets[targetIndex].Endpoint, text)
+			if err == nil && len(h.cfg.Targets[targetIndex].ContainsText) > 0 {
+				if body, err := io.ReadAll(resp.Body); err != nil {
+					h.mb.RecordHttpmetricErrorDataPoint(now, int64(1), h.cfg.Targets[targetIndex].Endpoint, err.Error())
+				} else {
+					bodyAsStr := string(body)
+					for _, text := range h.cfg.Targets[targetIndex].ContainsText {
+						count := strings.Count(bodyAsStr, text)
+						h.mb.RecordHttpmetricContentCountDataPoint(now, int64(count), h.cfg.Targets[targetIndex].Endpoint, text)
+					}
 				}
 			}
 			mux.Unlock()
