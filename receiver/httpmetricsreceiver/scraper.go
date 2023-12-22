@@ -69,20 +69,20 @@ func (h *httpmetricScraper) scrape(ctx context.Context) (pmetric.Metrics, error)
 			start := time.Now()
 			resp, err := targetClient.Do(req)
 			mux.Lock()
-			h.mb.RecordHttpcheckDurationDataPoint(now, time.Since(start).Milliseconds(), h.cfg.Targets[targetIndex].Endpoint)
+			h.mb.RecordHttpmetricDurationDataPoint(now, time.Since(start).Milliseconds(), h.cfg.Targets[targetIndex].Endpoint)
 
 			statusCode := 0
 			if err != nil {
-				h.mb.RecordHttpcheckErrorDataPoint(now, int64(1), h.cfg.Targets[targetIndex].Endpoint, err.Error())
+				h.mb.RecordHttpmetricErrorDataPoint(now, int64(1), h.cfg.Targets[targetIndex].Endpoint, err.Error())
 			} else {
 				statusCode = resp.StatusCode
 			}
 
 			for class, intVal := range httpResponseClasses {
 				if statusCode/100 == intVal {
-					h.mb.RecordHttpcheckStatusDataPoint(now, int64(1), h.cfg.Targets[targetIndex].Endpoint, int64(statusCode), req.Method, class)
+					h.mb.RecordHttpmetricStatusDataPoint(now, int64(1), h.cfg.Targets[targetIndex].Endpoint, int64(statusCode), req.Method, class)
 				} else {
-					h.mb.RecordHttpcheckStatusDataPoint(now, int64(0), h.cfg.Targets[targetIndex].Endpoint, int64(statusCode), req.Method, class)
+					h.mb.RecordHttpmetricStatusDataPoint(now, int64(0), h.cfg.Targets[targetIndex].Endpoint, int64(statusCode), req.Method, class)
 				}
 			}
 			mux.Unlock()
