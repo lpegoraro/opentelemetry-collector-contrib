@@ -1,15 +1,18 @@
-type: httpcheck
+type: httpmetric
 
 status:
   class: receiver
   stability:
     development: [metrics]
-  distributions: [contrib, sumo]
+  distributions: [contrib]
   warnings: []
   codeowners:
-    active: [codeboten]
+    active: [lpegoraro]
 
 resource_attributes:
+  tags:
+    description: Tags associated with the resource that received the request.
+    type: map[string]string
 
 attributes:
   http.url:
@@ -27,9 +30,12 @@ attributes:
   error.message:
     description: Error message recorded during check
     type: string
+    contains_text:
+      description: List of single-word texts to be searched on the response body
+      type: string
 
 metrics:
-  httpcheck.status:
+  httpmetric.status:
     description: 1 if the check resulted in status_code matching the status_class, otherwise 0.
     enabled: true
     sum:
@@ -38,14 +44,14 @@ metrics:
       monotonic: false
     unit: 1
     attributes: [http.url, http.status_code, http.method, http.status_class]
-  httpcheck.duration:
+  httpmetric.duration:
     description: Measures the duration of the HTTP check.
     enabled: true
     gauge:
       value_type: int
     unit: ms
     attributes: [http.url]
-  httpcheck.error:
+  httpmetric.error:
     description: Records errors occurring during HTTP check.
     enabled: true
     sum:
@@ -54,3 +60,12 @@ metrics:
       monotonic: false
     unit: "{error}"
     attributes: [http.url, error.message]
+  httpmetric.content_count:
+    description: Counts the number of hits on each text on config.
+    enabled: true
+    sum:
+      value_type: int
+      aggregation_temporality: cumulative
+      monotonic: true
+    unit: 1
+    attributes: [http.url, contains_text]
