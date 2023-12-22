@@ -6,7 +6,9 @@ package httpmetricsreceiver // import "github.com/open-telemetry/opentelemetry-c
 import (
 	"context"
 	"errors"
+	"io"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -83,6 +85,17 @@ func (h *httpmetricScraper) scrape(ctx context.Context) (pmetric.Metrics, error)
 					h.mb.RecordHttpmetricStatusDataPoint(now, int64(1), h.cfg.Targets[targetIndex].Endpoint, int64(statusCode), req.Method, class)
 				} else {
 					h.mb.RecordHttpmetricStatusDataPoint(now, int64(0), h.cfg.Targets[targetIndex].Endpoint, int64(statusCode), req.Method, class)
+				}
+			}
+
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				h.mb.RecordHttpmetricErrorDataPoint(now, int64(1), h.cfg.Targets[targetIndex].Endpoint, err.Error())
+			} else {
+				bodyAsStr := string(body)
+				for _, text := range h.cfg.Targets[targetIndex].ContainsText {
+					count := strings.Count(bodyAsStr, text)
+					h.mb.RecordHttpmetricContentCountDataPoint(now, int64(count), h.cfg.Targets[targetIndex].Endpoint, text)
 				}
 			}
 			mux.Unlock()

@@ -34,7 +34,7 @@ type targetConfig struct {
 	FollowRedirects               bool              `mapstructure:"follow_redirects"`
 	FailIfNotTLS                  bool              `mapstructure:"fail_if_not_tls"`
 	Tags                          map[string]string `mapstructure:"tags"`
-	ContainsText                  string            `mapstructure:"contains_text"`
+	ContainsText                  []string          `mapstructure:"contains_text"`
 }
 
 // Validate validates the configuration by checking for missing or invalid fields
