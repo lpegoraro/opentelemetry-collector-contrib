@@ -71,6 +71,10 @@ func TestMetricsBuilder(t *testing.T) {
 			allMetricsCount++
 			mb.RecordHttpmetricStatusDataPoint(ts, 1, "http.url-val", 16, "http.method-val", "http.status_class-val")
 
+			defaultMetricsCount++
+			allMetricsCount++
+			mb.RecordHttpmetricTLSDataPoint(ts, 1, "http.url-val")
+
 			rb := mb.NewResourceBuilder()
 			rb.SetTags(map[string]any{"key1": "tags-val1", "key2": "tags-val2"})
 			res := rb.Emit()
@@ -176,6 +180,23 @@ func TestMetricsBuilder(t *testing.T) {
 					attrVal, ok = dp.Attributes().Get("http.status_class")
 					assert.True(t, ok)
 					assert.EqualValues(t, "http.status_class-val", attrVal.Str())
+				case "httpmetric.tls":
+					assert.False(t, validatedMetrics["httpmetric.tls"], "Found a duplicate in the metrics slice: httpmetric.tls")
+					validatedMetrics["httpmetric.tls"] = true
+					assert.Equal(t, pmetric.MetricTypeSum, ms.At(i).Type())
+					assert.Equal(t, 1, ms.At(i).Sum().DataPoints().Len())
+					assert.Equal(t, "1 if the check was performed over TLS, otherwise 0.", ms.At(i).Description())
+					assert.Equal(t, "1", ms.At(i).Unit())
+					assert.Equal(t, false, ms.At(i).Sum().IsMonotonic())
+					assert.Equal(t, pmetric.AggregationTemporalityCumulative, ms.At(i).Sum().AggregationTemporality())
+					dp := ms.At(i).Sum().DataPoints().At(0)
+					assert.Equal(t, start, dp.StartTimestamp())
+					assert.Equal(t, ts, dp.Timestamp())
+					assert.Equal(t, pmetric.NumberDataPointValueTypeInt, dp.ValueType())
+					assert.Equal(t, int64(1), dp.IntValue())
+					attrVal, ok := dp.Attributes().Get("http.url")
+					assert.True(t, ok)
+					assert.EqualValues(t, "http.url-val", attrVal.Str())
 				}
 			}
 		})

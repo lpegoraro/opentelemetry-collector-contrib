@@ -73,6 +73,20 @@ Records errors occurring during HTTP check.
 | http.method | HTTP request method | Any Str |
 | http.status_class | HTTP response status class | Any Str |
 
+### httpmetric.tls
+
+1 if the check was performed over TLS, otherwise 0.
+
+| Unit | Metric Type | Value Type | Aggregation Temporality | Monotonic |
+| ---- | ----------- | ---------- | ----------------------- | --------- |
+| 1 | Sum | Int | Cumulative | false |
+
+#### Attributes
+
+| Name | Description | Values |
+| ---- | ----------- | ------ |
+| http.url | Full HTTP request URL. | Any Str |
+
 ## Resource Attributes
 
 | Name | Description | Values | Enabled |

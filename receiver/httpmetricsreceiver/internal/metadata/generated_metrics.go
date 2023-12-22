@@ -226,6 +226,59 @@ func newMetricHttpmetricStatus(cfg MetricConfig) metricHttpmetricStatus {
 	return m
 }
 
+type metricHttpmetricTLS struct {
+	data     pmetric.Metric // data buffer for generated metric.
+	config   MetricConfig   // metric config provided by user.
+	capacity int            // max observed number of data points added to the metric.
+}
+
+// init fills httpmetric.tls metric with initial data.
+func (m *metricHttpmetricTLS) init() {
+	m.data.SetName("httpmetric.tls")
+	m.data.SetDescription("1 if the check was performed over TLS, otherwise 0.")
+	m.data.SetUnit("1")
+	m.data.SetEmptySum()
+	m.data.Sum().SetIsMonotonic(false)
+	m.data.Sum().SetAggregationTemporality(pmetric.AggregationTemporalityCumulative)
+	m.data.Sum().DataPoints().EnsureCapacity(m.capacity)
+}
+
+func (m *metricHttpmetricTLS) recordDataPoint(start pcommon.Timestamp, ts pcommon.Timestamp, val int64, httpURLAttributeValue string) {
+	if !m.config.Enabled {
+		return
+	}
+	dp := m.data.Sum().DataPoints().AppendEmpty()
+	dp.SetStartTimestamp(start)
+	dp.SetTimestamp(ts)
+	dp.SetIntValue(val)
+	dp.Attributes().PutStr("http.url", httpURLAttributeValue)
+}
+
+// updateCapacity saves max length of data point slices that will be used for the slice capacity.
+func (m *metricHttpmetricTLS) updateCapacity() {
+	if m.data.Sum().DataPoints().Len() > m.capacity {
+		m.capacity = m.data.Sum().DataPoints().Len()
+	}
+}
+
+// emit appends recorded metric data to a metrics slice and prepares it for recording another set of data points.
+func (m *metricHttpmetricTLS) emit(metrics pmetric.MetricSlice) {
+	if m.config.Enabled && m.data.Sum().DataPoints().Len() > 0 {
+		m.updateCapacity()
+		m.data.MoveTo(metrics.AppendEmpty())
+		m.init()
+	}
+}
+
+func newMetricHttpmetricTLS(cfg MetricConfig) metricHttpmetricTLS {
+	m := metricHttpmetricTLS{config: cfg}
+	if cfg.Enabled {
+		m.data = pmetric.NewMetric()
+		m.init()
+	}
+	return m
+}
+
 // MetricsBuilder provides an interface for scrapers to report metrics while taking care of all the transformations
 // required to produce metric representation defined in metadata and user config.
 type MetricsBuilder struct {
@@ -238,6 +291,7 @@ type MetricsBuilder struct {
 	metricHttpmetricDuration     metricHttpmetricDuration
 	metricHttpmetricError        metricHttpmetricError
 	metricHttpmetricStatus       metricHttpmetricStatus
+	metricHttpmetricTLS          metricHttpmetricTLS
 }
 
 // metricBuilderOption applies changes to default metrics builder.
@@ -260,6 +314,7 @@ func NewMetricsBuilder(mbc MetricsBuilderConfig, settings receiver.CreateSetting
 		metricHttpmetricDuration:     newMetricHttpmetricDuration(mbc.Metrics.HttpmetricDuration),
 		metricHttpmetricError:        newMetricHttpmetricError(mbc.Metrics.HttpmetricError),
 		metricHttpmetricStatus:       newMetricHttpmetricStatus(mbc.Metrics.HttpmetricStatus),
+		metricHttpmetricTLS:          newMetricHttpmetricTLS(mbc.Metrics.HttpmetricTLS),
 	}
 	for _, op := range options {
 		op(mb)
@@ -325,6 +380,7 @@ func (mb *MetricsBuilder) EmitForResource(rmo ...ResourceMetricsOption) {
 	mb.metricHttpmetricDuration.emit(ils.Metrics())
 	mb.metricHttpmetricError.emit(ils.Metrics())
 	mb.metricHttpmetricStatus.emit(ils.Metrics())
+	mb.metricHttpmetricTLS.emit(ils.Metrics())
 
 	for _, op := range rmo {
 		op(rm)
@@ -363,6 +419,11 @@ func (mb *MetricsBuilder) RecordHttpmetricErrorDataPoint(ts pcommon.Timestamp, v
 // RecordHttpmetricStatusDataPoint adds a data point to httpmetric.status metric.
 func (mb *MetricsBuilder) RecordHttpmetricStatusDataPoint(ts pcommon.Timestamp, val int64, httpURLAttributeValue string, httpStatusCodeAttributeValue int64, httpMethodAttributeValue string, httpStatusClassAttributeValue string) {
 	mb.metricHttpmetricStatus.recordDataPoint(mb.startTime, ts, val, httpURLAttributeValue, httpStatusCodeAttributeValue, httpMethodAttributeValue, httpStatusClassAttributeValue)
+}
+
+// RecordHttpmetricTLSDataPoint adds a data point to httpmetric.tls metric.
+func (mb *MetricsBuilder) RecordHttpmetricTLSDataPoint(ts pcommon.Timestamp, val int64, httpURLAttributeValue string) {
+	mb.metricHttpmetricTLS.recordDataPoint(mb.startTime, ts, val, httpURLAttributeValue)
 }
 
 // Reset resets metrics builder to its initial state. It should be used when external metrics source is restarted,

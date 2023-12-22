@@ -9,6 +9,8 @@ all_set:
       enabled: true
     httpmetric.status:
       enabled: true
+    httpmetric.tls:
+      enabled: true
   resource_attributes:
     tags:
       enabled: true
@@ -21,6 +23,8 @@ none_set:
     httpmetric.error:
       enabled: false
     httpmetric.status:
+      enabled: false
+    httpmetric.tls:
       enabled: false
   resource_attributes:
     tags:

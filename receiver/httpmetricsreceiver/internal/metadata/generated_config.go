@@ -29,6 +29,7 @@ type MetricsConfig struct {
 	HttpmetricDuration     MetricConfig `mapstructure:"httpmetric.duration"`
 	HttpmetricError        MetricConfig `mapstructure:"httpmetric.error"`
 	HttpmetricStatus       MetricConfig `mapstructure:"httpmetric.status"`
+	HttpmetricTLS          MetricConfig `mapstructure:"httpmetric.tls"`
 }
 
 func DefaultMetricsConfig() MetricsConfig {
@@ -43,6 +44,9 @@ func DefaultMetricsConfig() MetricsConfig {
 			Enabled: true,
 		},
 		HttpmetricStatus: MetricConfig{
+			Enabled: true,
+		},
+		HttpmetricTLS: MetricConfig{
 			Enabled: true,
 		},
 	}

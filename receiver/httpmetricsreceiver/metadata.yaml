@@ -69,3 +69,13 @@ metrics:
       monotonic: true
     unit: 1
     attributes: [http.url, contains_text]
+  httpmetric.tls:
+    description: 1 if the check was performed over TLS, otherwise 0.
+    enabled: true
+    sum:
+      value_type: int
+      aggregation_temporality: cumulative
+      monotonic: false
+    unit: 1
+    attributes: [http.url]
+

@@ -30,6 +30,7 @@ func TestMetricsBuilderConfig(t *testing.T) {
 					HttpmetricDuration:     MetricConfig{Enabled: true},
 					HttpmetricError:        MetricConfig{Enabled: true},
 					HttpmetricStatus:       MetricConfig{Enabled: true},
+					HttpmetricTLS:          MetricConfig{Enabled: true},
 				},
 				ResourceAttributes: ResourceAttributesConfig{
 					Tags: ResourceAttributeConfig{Enabled: true},
@@ -44,6 +45,7 @@ func TestMetricsBuilderConfig(t *testing.T) {
 					HttpmetricDuration:     MetricConfig{Enabled: false},
 					HttpmetricError:        MetricConfig{Enabled: false},
 					HttpmetricStatus:       MetricConfig{Enabled: false},
+					HttpmetricTLS:          MetricConfig{Enabled: false},
 				},
 				ResourceAttributes: ResourceAttributesConfig{
 					Tags: ResourceAttributeConfig{Enabled: false},

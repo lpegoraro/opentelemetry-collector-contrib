@@ -72,7 +72,8 @@ func (h *httpmetricScraper) scrape(ctx context.Context) (pmetric.Metrics, error)
 			resp, err := targetClient.Do(req)
 			mux.Lock()
 			h.mb.RecordHttpmetricDurationDataPoint(now, time.Since(start).Milliseconds(), h.cfg.Targets[targetIndex].Endpoint)
-
+			//wasTLS := resp.TLS.HandshakeComplete
+			//h.mb.RecordHttpmetricTlsDataPoint(now, int64(1), h.cfg.Targets[targetIndex].Endpoint, wasTLS)
 			statusCode := 0
 			if err != nil {
 				h.mb.RecordHttpmetricErrorDataPoint(now, int64(1), h.cfg.Targets[targetIndex].Endpoint, err.Error())
@@ -95,7 +96,7 @@ func (h *httpmetricScraper) scrape(ctx context.Context) (pmetric.Metrics, error)
 					bodyAsStr := string(body)
 					for _, text := range h.cfg.Targets[targetIndex].ContainsText {
 						count := strings.Count(bodyAsStr, text)
-						h.mb.RecordHttpmetricContentCountDataPoint(now, int64(count), h.cfg.Targets[targetIndex].Endpoint, text)
+						h.mb.RecordHttpmetricContentCountDataPoint(now, int64(count), h.cfg.Targets[targetIndex].Endpoint, []any{text})
 					}
 				}
 			}
