@@ -23,34 +23,72 @@ func (ms *MetricConfig) Unmarshal(parser *confmap.Conf) error {
 	return nil
 }
 
-// MetricsConfig provides config for httpcheck metrics.
+// MetricsConfig provides config for httpmetric metrics.
 type MetricsConfig struct {
-	HttpcheckDuration MetricConfig `mapstructure:"httpcheck.duration"`
-	HttpcheckError    MetricConfig `mapstructure:"httpcheck.error"`
-	HttpcheckStatus   MetricConfig `mapstructure:"httpcheck.status"`
+	HttpmetricContentCount MetricConfig `mapstructure:"httpmetric.content_count"`
+	HttpmetricDuration     MetricConfig `mapstructure:"httpmetric.duration"`
+	HttpmetricError        MetricConfig `mapstructure:"httpmetric.error"`
+	HttpmetricStatus       MetricConfig `mapstructure:"httpmetric.status"`
 }
 
 func DefaultMetricsConfig() MetricsConfig {
 	return MetricsConfig{
-		HttpcheckDuration: MetricConfig{
+		HttpmetricContentCount: MetricConfig{
 			Enabled: true,
 		},
-		HttpcheckError: MetricConfig{
+		HttpmetricDuration: MetricConfig{
 			Enabled: true,
 		},
-		HttpcheckStatus: MetricConfig{
+		HttpmetricError: MetricConfig{
+			Enabled: true,
+		},
+		HttpmetricStatus: MetricConfig{
 			Enabled: true,
 		},
 	}
 }
 
-// MetricsBuilderConfig is a configuration for httpcheck metrics builder.
+// ResourceAttributeConfig provides common config for a particular resource attribute.
+type ResourceAttributeConfig struct {
+	Enabled bool `mapstructure:"enabled"`
+
+	enabledSetByUser bool
+}
+
+func (rac *ResourceAttributeConfig) Unmarshal(parser *confmap.Conf) error {
+	if parser == nil {
+		return nil
+	}
+	err := parser.Unmarshal(rac, confmap.WithErrorUnused())
+	if err != nil {
+		return err
+	}
+	rac.enabledSetByUser = parser.IsSet("enabled")
+	return nil
+}
+
+// ResourceAttributesConfig provides config for httpmetric resource attributes.
+type ResourceAttributesConfig struct {
+	Tags ResourceAttributeConfig `mapstructure:"tags"`
+}
+
+func DefaultResourceAttributesConfig() ResourceAttributesConfig {
+	return ResourceAttributesConfig{
+		Tags: ResourceAttributeConfig{
+			Enabled: false,
+		},
+	}
+}
+
+// MetricsBuilderConfig is a configuration for httpmetric metrics builder.
 type MetricsBuilderConfig struct {
-	Metrics MetricsConfig `mapstructure:"metrics"`
+	Metrics            MetricsConfig            `mapstructure:"metrics"`
+	ResourceAttributes ResourceAttributesConfig `mapstructure:"resource_attributes"`
 }
 
 func DefaultMetricsBuilderConfig() MetricsBuilderConfig {
 	return MetricsBuilderConfig{
-		Metrics: DefaultMetricsConfig(),
+		Metrics:            DefaultMetricsConfig(),
+		ResourceAttributes: DefaultResourceAttributesConfig(),
 	}
 }

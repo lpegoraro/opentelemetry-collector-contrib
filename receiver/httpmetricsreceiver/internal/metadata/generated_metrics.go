@@ -11,22 +11,76 @@ import (
 	"go.opentelemetry.io/collector/receiver"
 )
 
-type metricHttpcheckDuration struct {
+type metricHttpmetricContentCount struct {
 	data     pmetric.Metric // data buffer for generated metric.
 	config   MetricConfig   // metric config provided by user.
 	capacity int            // max observed number of data points added to the metric.
 }
 
-// init fills httpcheck.duration metric with initial data.
-func (m *metricHttpcheckDuration) init() {
-	m.data.SetName("httpcheck.duration")
+// init fills httpmetric.content_count metric with initial data.
+func (m *metricHttpmetricContentCount) init() {
+	m.data.SetName("httpmetric.content_count")
+	m.data.SetDescription("Counts the number of hits on each text on config.")
+	m.data.SetUnit("1")
+	m.data.SetEmptySum()
+	m.data.Sum().SetIsMonotonic(true)
+	m.data.Sum().SetAggregationTemporality(pmetric.AggregationTemporalityCumulative)
+	m.data.Sum().DataPoints().EnsureCapacity(m.capacity)
+}
+
+func (m *metricHttpmetricContentCount) recordDataPoint(start pcommon.Timestamp, ts pcommon.Timestamp, val int64, httpURLAttributeValue string, containsTextAttributeValue string) {
+	if !m.config.Enabled {
+		return
+	}
+	dp := m.data.Sum().DataPoints().AppendEmpty()
+	dp.SetStartTimestamp(start)
+	dp.SetTimestamp(ts)
+	dp.SetIntValue(val)
+	dp.Attributes().PutStr("http.url", httpURLAttributeValue)
+	dp.Attributes().PutStr("contains_text", containsTextAttributeValue)
+}
+
+// updateCapacity saves max length of data point slices that will be used for the slice capacity.
+func (m *metricHttpmetricContentCount) updateCapacity() {
+	if m.data.Sum().DataPoints().Len() > m.capacity {
+		m.capacity = m.data.Sum().DataPoints().Len()
+	}
+}
+
+// emit appends recorded metric data to a metrics slice and prepares it for recording another set of data points.
+func (m *metricHttpmetricContentCount) emit(metrics pmetric.MetricSlice) {
+	if m.config.Enabled && m.data.Sum().DataPoints().Len() > 0 {
+		m.updateCapacity()
+		m.data.MoveTo(metrics.AppendEmpty())
+		m.init()
+	}
+}
+
+func newMetricHttpmetricContentCount(cfg MetricConfig) metricHttpmetricContentCount {
+	m := metricHttpmetricContentCount{config: cfg}
+	if cfg.Enabled {
+		m.data = pmetric.NewMetric()
+		m.init()
+	}
+	return m
+}
+
+type metricHttpmetricDuration struct {
+	data     pmetric.Metric // data buffer for generated metric.
+	config   MetricConfig   // metric config provided by user.
+	capacity int            // max observed number of data points added to the metric.
+}
+
+// init fills httpmetric.duration metric with initial data.
+func (m *metricHttpmetricDuration) init() {
+	m.data.SetName("httpmetric.duration")
 	m.data.SetDescription("Measures the duration of the HTTP check.")
 	m.data.SetUnit("ms")
 	m.data.SetEmptyGauge()
 	m.data.Gauge().DataPoints().EnsureCapacity(m.capacity)
 }
 
-func (m *metricHttpcheckDuration) recordDataPoint(start pcommon.Timestamp, ts pcommon.Timestamp, val int64, httpURLAttributeValue string) {
+func (m *metricHttpmetricDuration) recordDataPoint(start pcommon.Timestamp, ts pcommon.Timestamp, val int64, httpURLAttributeValue string) {
 	if !m.config.Enabled {
 		return
 	}
@@ -38,14 +92,14 @@ func (m *metricHttpcheckDuration) recordDataPoint(start pcommon.Timestamp, ts pc
 }
 
 // updateCapacity saves max length of data point slices that will be used for the slice capacity.
-func (m *metricHttpcheckDuration) updateCapacity() {
+func (m *metricHttpmetricDuration) updateCapacity() {
 	if m.data.Gauge().DataPoints().Len() > m.capacity {
 		m.capacity = m.data.Gauge().DataPoints().Len()
 	}
 }
 
 // emit appends recorded metric data to a metrics slice and prepares it for recording another set of data points.
-func (m *metricHttpcheckDuration) emit(metrics pmetric.MetricSlice) {
+func (m *metricHttpmetricDuration) emit(metrics pmetric.MetricSlice) {
 	if m.config.Enabled && m.data.Gauge().DataPoints().Len() > 0 {
 		m.updateCapacity()
 		m.data.MoveTo(metrics.AppendEmpty())
@@ -53,8 +107,8 @@ func (m *metricHttpcheckDuration) emit(metrics pmetric.MetricSlice) {
 	}
 }
 
-func newMetricHttpcheckDuration(cfg MetricConfig) metricHttpcheckDuration {
-	m := metricHttpcheckDuration{config: cfg}
+func newMetricHttpmetricDuration(cfg MetricConfig) metricHttpmetricDuration {
+	m := metricHttpmetricDuration{config: cfg}
 	if cfg.Enabled {
 		m.data = pmetric.NewMetric()
 		m.init()
@@ -62,15 +116,15 @@ func newMetricHttpcheckDuration(cfg MetricConfig) metricHttpcheckDuration {
 	return m
 }
 
-type metricHttpcheckError struct {
+type metricHttpmetricError struct {
 	data     pmetric.Metric // data buffer for generated metric.
 	config   MetricConfig   // metric config provided by user.
 	capacity int            // max observed number of data points added to the metric.
 }
 
-// init fills httpcheck.error metric with initial data.
-func (m *metricHttpcheckError) init() {
-	m.data.SetName("httpcheck.error")
+// init fills httpmetric.error metric with initial data.
+func (m *metricHttpmetricError) init() {
+	m.data.SetName("httpmetric.error")
 	m.data.SetDescription("Records errors occurring during HTTP check.")
 	m.data.SetUnit("{error}")
 	m.data.SetEmptySum()
@@ -79,7 +133,7 @@ func (m *metricHttpcheckError) init() {
 	m.data.Sum().DataPoints().EnsureCapacity(m.capacity)
 }
 
-func (m *metricHttpcheckError) recordDataPoint(start pcommon.Timestamp, ts pcommon.Timestamp, val int64, httpURLAttributeValue string, errorMessageAttributeValue string) {
+func (m *metricHttpmetricError) recordDataPoint(start pcommon.Timestamp, ts pcommon.Timestamp, val int64, httpURLAttributeValue string, errorMessageAttributeValue string) {
 	if !m.config.Enabled {
 		return
 	}
@@ -92,14 +146,14 @@ func (m *metricHttpcheckError) recordDataPoint(start pcommon.Timestamp, ts pcomm
 }
 
 // updateCapacity saves max length of data point slices that will be used for the slice capacity.
-func (m *metricHttpcheckError) updateCapacity() {
+func (m *metricHttpmetricError) updateCapacity() {
 	if m.data.Sum().DataPoints().Len() > m.capacity {
 		m.capacity = m.data.Sum().DataPoints().Len()
 	}
 }
 
 // emit appends recorded metric data to a metrics slice and prepares it for recording another set of data points.
-func (m *metricHttpcheckError) emit(metrics pmetric.MetricSlice) {
+func (m *metricHttpmetricError) emit(metrics pmetric.MetricSlice) {
 	if m.config.Enabled && m.data.Sum().DataPoints().Len() > 0 {
 		m.updateCapacity()
 		m.data.MoveTo(metrics.AppendEmpty())
@@ -107,8 +161,8 @@ func (m *metricHttpcheckError) emit(metrics pmetric.MetricSlice) {
 	}
 }
 
-func newMetricHttpcheckError(cfg MetricConfig) metricHttpcheckError {
-	m := metricHttpcheckError{config: cfg}
+func newMetricHttpmetricError(cfg MetricConfig) metricHttpmetricError {
+	m := metricHttpmetricError{config: cfg}
 	if cfg.Enabled {
 		m.data = pmetric.NewMetric()
 		m.init()
@@ -116,15 +170,15 @@ func newMetricHttpcheckError(cfg MetricConfig) metricHttpcheckError {
 	return m
 }
 
-type metricHttpcheckStatus struct {
+type metricHttpmetricStatus struct {
 	data     pmetric.Metric // data buffer for generated metric.
 	config   MetricConfig   // metric config provided by user.
 	capacity int            // max observed number of data points added to the metric.
 }
 
-// init fills httpcheck.status metric with initial data.
-func (m *metricHttpcheckStatus) init() {
-	m.data.SetName("httpcheck.status")
+// init fills httpmetric.status metric with initial data.
+func (m *metricHttpmetricStatus) init() {
+	m.data.SetName("httpmetric.status")
 	m.data.SetDescription("1 if the check resulted in status_code matching the status_class, otherwise 0.")
 	m.data.SetUnit("1")
 	m.data.SetEmptySum()
@@ -133,7 +187,7 @@ func (m *metricHttpcheckStatus) init() {
 	m.data.Sum().DataPoints().EnsureCapacity(m.capacity)
 }
 
-func (m *metricHttpcheckStatus) recordDataPoint(start pcommon.Timestamp, ts pcommon.Timestamp, val int64, httpURLAttributeValue string, httpStatusCodeAttributeValue int64, httpMethodAttributeValue string, httpStatusClassAttributeValue string) {
+func (m *metricHttpmetricStatus) recordDataPoint(start pcommon.Timestamp, ts pcommon.Timestamp, val int64, httpURLAttributeValue string, httpStatusCodeAttributeValue int64, httpMethodAttributeValue string, httpStatusClassAttributeValue string) {
 	if !m.config.Enabled {
 		return
 	}
@@ -148,14 +202,14 @@ func (m *metricHttpcheckStatus) recordDataPoint(start pcommon.Timestamp, ts pcom
 }
 
 // updateCapacity saves max length of data point slices that will be used for the slice capacity.
-func (m *metricHttpcheckStatus) updateCapacity() {
+func (m *metricHttpmetricStatus) updateCapacity() {
 	if m.data.Sum().DataPoints().Len() > m.capacity {
 		m.capacity = m.data.Sum().DataPoints().Len()
 	}
 }
 
 // emit appends recorded metric data to a metrics slice and prepares it for recording another set of data points.
-func (m *metricHttpcheckStatus) emit(metrics pmetric.MetricSlice) {
+func (m *metricHttpmetricStatus) emit(metrics pmetric.MetricSlice) {
 	if m.config.Enabled && m.data.Sum().DataPoints().Len() > 0 {
 		m.updateCapacity()
 		m.data.MoveTo(metrics.AppendEmpty())
@@ -163,8 +217,8 @@ func (m *metricHttpcheckStatus) emit(metrics pmetric.MetricSlice) {
 	}
 }
 
-func newMetricHttpcheckStatus(cfg MetricConfig) metricHttpcheckStatus {
-	m := metricHttpcheckStatus{config: cfg}
+func newMetricHttpmetricStatus(cfg MetricConfig) metricHttpmetricStatus {
+	m := metricHttpmetricStatus{config: cfg}
 	if cfg.Enabled {
 		m.data = pmetric.NewMetric()
 		m.init()
@@ -175,14 +229,15 @@ func newMetricHttpcheckStatus(cfg MetricConfig) metricHttpcheckStatus {
 // MetricsBuilder provides an interface for scrapers to report metrics while taking care of all the transformations
 // required to produce metric representation defined in metadata and user config.
 type MetricsBuilder struct {
-	config                  MetricsBuilderConfig // config of the metrics builder.
-	startTime               pcommon.Timestamp    // start time that will be applied to all recorded data points.
-	metricsCapacity         int                  // maximum observed number of metrics per resource.
-	metricsBuffer           pmetric.Metrics      // accumulates metrics data before emitting.
-	buildInfo               component.BuildInfo  // contains version information.
-	metricHttpcheckDuration metricHttpcheckDuration
-	metricHttpcheckError    metricHttpcheckError
-	metricHttpcheckStatus   metricHttpcheckStatus
+	config                       MetricsBuilderConfig // config of the metrics builder.
+	startTime                    pcommon.Timestamp    // start time that will be applied to all recorded data points.
+	metricsCapacity              int                  // maximum observed number of metrics per resource.
+	metricsBuffer                pmetric.Metrics      // accumulates metrics data before emitting.
+	buildInfo                    component.BuildInfo  // contains version information.
+	metricHttpmetricContentCount metricHttpmetricContentCount
+	metricHttpmetricDuration     metricHttpmetricDuration
+	metricHttpmetricError        metricHttpmetricError
+	metricHttpmetricStatus       metricHttpmetricStatus
 }
 
 // metricBuilderOption applies changes to default metrics builder.
@@ -197,18 +252,24 @@ func WithStartTime(startTime pcommon.Timestamp) metricBuilderOption {
 
 func NewMetricsBuilder(mbc MetricsBuilderConfig, settings receiver.CreateSettings, options ...metricBuilderOption) *MetricsBuilder {
 	mb := &MetricsBuilder{
-		config:                  mbc,
-		startTime:               pcommon.NewTimestampFromTime(time.Now()),
-		metricsBuffer:           pmetric.NewMetrics(),
-		buildInfo:               settings.BuildInfo,
-		metricHttpcheckDuration: newMetricHttpcheckDuration(mbc.Metrics.HttpcheckDuration),
-		metricHttpcheckError:    newMetricHttpcheckError(mbc.Metrics.HttpcheckError),
-		metricHttpcheckStatus:   newMetricHttpcheckStatus(mbc.Metrics.HttpcheckStatus),
+		config:                       mbc,
+		startTime:                    pcommon.NewTimestampFromTime(time.Now()),
+		metricsBuffer:                pmetric.NewMetrics(),
+		buildInfo:                    settings.BuildInfo,
+		metricHttpmetricContentCount: newMetricHttpmetricContentCount(mbc.Metrics.HttpmetricContentCount),
+		metricHttpmetricDuration:     newMetricHttpmetricDuration(mbc.Metrics.HttpmetricDuration),
+		metricHttpmetricError:        newMetricHttpmetricError(mbc.Metrics.HttpmetricError),
+		metricHttpmetricStatus:       newMetricHttpmetricStatus(mbc.Metrics.HttpmetricStatus),
 	}
 	for _, op := range options {
 		op(mb)
 	}
 	return mb
+}
+
+// NewResourceBuilder returns a new resource builder that should be used to build a resource associated with for the emitted metrics.
+func (mb *MetricsBuilder) NewResourceBuilder() *ResourceBuilder {
+	return NewResourceBuilder(mb.config.ResourceAttributes)
 }
 
 // updateCapacity updates max length of metrics and resource attributes that will be used for the slice capacity.
@@ -260,9 +321,10 @@ func (mb *MetricsBuilder) EmitForResource(rmo ...ResourceMetricsOption) {
 	ils.Scope().SetName("otelcol/httpmetricsreceiver")
 	ils.Scope().SetVersion(mb.buildInfo.Version)
 	ils.Metrics().EnsureCapacity(mb.metricsCapacity)
-	mb.metricHttpcheckDuration.emit(ils.Metrics())
-	mb.metricHttpcheckError.emit(ils.Metrics())
-	mb.metricHttpcheckStatus.emit(ils.Metrics())
+	mb.metricHttpmetricContentCount.emit(ils.Metrics())
+	mb.metricHttpmetricDuration.emit(ils.Metrics())
+	mb.metricHttpmetricError.emit(ils.Metrics())
+	mb.metricHttpmetricStatus.emit(ils.Metrics())
 
 	for _, op := range rmo {
 		op(rm)
@@ -283,19 +345,24 @@ func (mb *MetricsBuilder) Emit(rmo ...ResourceMetricsOption) pmetric.Metrics {
 	return metrics
 }
 
-// RecordHttpcheckDurationDataPoint adds a data point to httpcheck.duration metric.
-func (mb *MetricsBuilder) RecordHttpcheckDurationDataPoint(ts pcommon.Timestamp, val int64, httpURLAttributeValue string) {
-	mb.metricHttpcheckDuration.recordDataPoint(mb.startTime, ts, val, httpURLAttributeValue)
+// RecordHttpmetricContentCountDataPoint adds a data point to httpmetric.content_count metric.
+func (mb *MetricsBuilder) RecordHttpmetricContentCountDataPoint(ts pcommon.Timestamp, val int64, httpURLAttributeValue string, containsTextAttributeValue string) {
+	mb.metricHttpmetricContentCount.recordDataPoint(mb.startTime, ts, val, httpURLAttributeValue, containsTextAttributeValue)
 }
 
-// RecordHttpcheckErrorDataPoint adds a data point to httpcheck.error metric.
-func (mb *MetricsBuilder) RecordHttpcheckErrorDataPoint(ts pcommon.Timestamp, val int64, httpURLAttributeValue string, errorMessageAttributeValue string) {
-	mb.metricHttpcheckError.recordDataPoint(mb.startTime, ts, val, httpURLAttributeValue, errorMessageAttributeValue)
+// RecordHttpmetricDurationDataPoint adds a data point to httpmetric.duration metric.
+func (mb *MetricsBuilder) RecordHttpmetricDurationDataPoint(ts pcommon.Timestamp, val int64, httpURLAttributeValue string) {
+	mb.metricHttpmetricDuration.recordDataPoint(mb.startTime, ts, val, httpURLAttributeValue)
 }
 
-// RecordHttpcheckStatusDataPoint adds a data point to httpcheck.status metric.
-func (mb *MetricsBuilder) RecordHttpcheckStatusDataPoint(ts pcommon.Timestamp, val int64, httpURLAttributeValue string, httpStatusCodeAttributeValue int64, httpMethodAttributeValue string, httpStatusClassAttributeValue string) {
-	mb.metricHttpcheckStatus.recordDataPoint(mb.startTime, ts, val, httpURLAttributeValue, httpStatusCodeAttributeValue, httpMethodAttributeValue, httpStatusClassAttributeValue)
+// RecordHttpmetricErrorDataPoint adds a data point to httpmetric.error metric.
+func (mb *MetricsBuilder) RecordHttpmetricErrorDataPoint(ts pcommon.Timestamp, val int64, httpURLAttributeValue string, errorMessageAttributeValue string) {
+	mb.metricHttpmetricError.recordDataPoint(mb.startTime, ts, val, httpURLAttributeValue, errorMessageAttributeValue)
+}
+
+// RecordHttpmetricStatusDataPoint adds a data point to httpmetric.status metric.
+func (mb *MetricsBuilder) RecordHttpmetricStatusDataPoint(ts pcommon.Timestamp, val int64, httpURLAttributeValue string, httpStatusCodeAttributeValue int64, httpMethodAttributeValue string, httpStatusClassAttributeValue string) {
+	mb.metricHttpmetricStatus.recordDataPoint(mb.startTime, ts, val, httpURLAttributeValue, httpStatusCodeAttributeValue, httpMethodAttributeValue, httpStatusClassAttributeValue)
 }
 
 // Reset resets metrics builder to its initial state. It should be used when external metrics source is restarted,

@@ -12,7 +12,7 @@ status:
 resource_attributes:
   tags:
     description: Tags associated with the resource that received the request.
-    type: map[string]string
+    type: map
 
 attributes:
   http.url:
@@ -30,9 +30,9 @@ attributes:
   error.message:
     description: Error message recorded during check
     type: string
-    contains_text:
-      description: List of single-word texts to be searched on the response body
-      type: string
+  contains_text:
+    description: List of single-word texts to be searched on the response body
+    type: string
 
 metrics:
   httpmetric.status:
