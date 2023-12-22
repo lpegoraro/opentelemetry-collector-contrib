@@ -101,7 +101,7 @@ func udpInputAttributesTest(input []byte, expected []string) func(t *testing.T) 
 		for _, expectedBody := range expected {
 			select {
 			case entry := <-entryChan:
-				expectedAttributes := map[string]interface{}{
+				expectedAttributes := map[string]any{
 					"net.transport": "IP.UDP",
 				}
 				// LocalAddr for udpInput.connection is a server address
@@ -143,8 +143,11 @@ func TestInput(t *testing.T) {
 	t.Run("TrailingCRNewlines", udpInputTest([]byte("message1\r\n"), []string{"message1"}, cfg))
 	t.Run("NewlineInMessage", udpInputTest([]byte("message1\nmessage2\n"), []string{"message1\nmessage2"}, cfg))
 
-	cfg.AsyncConfig = NewAsyncConfig()
-	cfg.AsyncConfig.Readers = 2
+	cfg.AsyncConfig = &AsyncConfig{
+		Readers:        2,
+		Processors:     2,
+		MaxQueueLength: 100,
+	}
 	t.Run("SimpleAsync", udpInputTest([]byte("message1"), []string{"message1"}, cfg))
 }
 

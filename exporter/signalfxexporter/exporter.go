@@ -152,6 +152,7 @@ func (se *signalfxExporter) start(ctx context.Context, host component.Host) (err
 			MaxIdleConns:        se.config.DimensionClient.MaxIdleConns,
 			MaxIdleConnsPerHost: se.config.DimensionClient.MaxIdleConnsPerHost,
 			IdleConnTimeout:     se.config.DimensionClient.IdleConnTimeout,
+			Timeout:             se.config.DimensionClient.Timeout,
 		})
 	dimClient.Start()
 
@@ -166,7 +167,7 @@ func (se *signalfxExporter) start(ctx context.Context, host component.Host) (err
 }
 
 func newGzipPool() sync.Pool {
-	return sync.Pool{New: func() interface{} {
+	return sync.Pool{New: func() any {
 		return gzip.NewWriter(nil)
 	}}
 }

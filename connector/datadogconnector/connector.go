@@ -5,12 +5,15 @@ package datadogconnector // import "github.com/open-telemetry/opentelemetry-coll
 
 import (
 	"context"
+	"fmt"
 
 	pb "github.com/DataDog/datadog-agent/pkg/proto/pbgo/trace"
+	"github.com/DataDog/opentelemetry-mapping-go/pkg/otlp/attributes"
 	"github.com/DataDog/opentelemetry-mapping-go/pkg/otlp/metrics"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/consumer"
 	"go.opentelemetry.io/collector/pdata/ptrace"
+	"go.opentelemetry.io/otel/metric/noop"
 	"go.uber.org/zap"
 
 	"github.com/open-telemetry/opentelemetry-collector-contrib/internal/datadog"
@@ -18,7 +21,8 @@ import (
 
 // connectorImp is the schema for connector
 type connectorImp struct {
-	metricsConsumer consumer.Metrics // the next component in the pipeline to ingest data after connector
+	metricsConsumer consumer.Metrics // the next component in the pipeline to ingest metrics after connector
+	tracesConsumer  consumer.Traces  // the next component in the pipeline to ingest traces after connector
 	logger          *zap.Logger
 
 	// agent specifies the agent used to ingest traces and output APM Stats.
@@ -40,22 +44,28 @@ type connectorImp struct {
 var _ component.Component = (*connectorImp)(nil) // testing that the connectorImp properly implements the type Component interface
 
 // function to create a new connector
-func newConnector(logger *zap.Logger, _ component.Config, nextConsumer consumer.Metrics) (*connectorImp, error) {
-	logger.Info("Building datadog connector")
+func newConnector(set component.TelemetrySettings, _ component.Config, metricsConsumer consumer.Metrics, tracesConsumer consumer.Traces) (*connectorImp, error) {
+	set.Logger.Info("Building datadog connector")
 
 	in := make(chan *pb.StatsPayload, 100)
-	trans, err := metrics.NewTranslator(logger)
+	set.MeterProvider = noop.NewMeterProvider() // disable metrics for the connector
+	attributesTranslator, err := attributes.NewTranslator(set)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create attributes translator: %w", err)
+	}
+	trans, err := metrics.NewTranslator(set, attributesTranslator)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create metrics translator: %w", err)
+	}
 
 	ctx := context.Background()
-	if err != nil {
-		return nil, err
-	}
 	return &connectorImp{
-		logger:          logger,
+		logger:          set.Logger,
 		agent:           datadog.NewAgent(ctx, in),
 		translator:      trans,
 		in:              in,
-		metricsConsumer: nextConsumer,
+		metricsConsumer: metricsConsumer,
+		tracesConsumer:  tracesConsumer,
 		exit:            make(chan struct{}),
 	}, nil
 }
@@ -64,7 +74,9 @@ func newConnector(logger *zap.Logger, _ component.Config, nextConsumer consumer.
 func (c *connectorImp) Start(_ context.Context, _ component.Host) error {
 	c.logger.Info("Starting datadogconnector")
 	c.agent.Start()
-	go c.run()
+	if c.metricsConsumer != nil {
+		go c.run()
+	}
 	return nil
 }
 
@@ -78,13 +90,16 @@ func (c *connectorImp) Shutdown(context.Context) error {
 }
 
 // Capabilities implements the consumer interface.
-// tells use whether the component(connector) will mutate the data passed into it. if set to true the processor does modify the data
+// tells use whether the component(connector) will mutate the data passed into it. if set to true the connector does modify the data
 func (c *connectorImp) Capabilities() consumer.Capabilities {
-	return consumer.Capabilities{MutatesData: false}
+	return consumer.Capabilities{MutatesData: true} // ConsumeTraces puts a new attribute _dd.stats_computed
 }
 
 func (c *connectorImp) ConsumeTraces(ctx context.Context, traces ptrace.Traces) error {
 	c.agent.Ingest(ctx, traces)
+	if c.tracesConsumer != nil {
+		return c.tracesConsumer.ConsumeTraces(ctx, traces)
+	}
 	return nil
 }
 

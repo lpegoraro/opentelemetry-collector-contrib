@@ -249,7 +249,7 @@ func (p *logPusher) ForceFlush() error {
 	return nil
 }
 
-func (p *logPusher) pushEventBatch(req interface{}) error {
+func (p *logPusher) pushEventBatch(req any) error {
 
 	// http://docs.aws.amazon.com/goto/SdkForGoV1/logs-2014-03-28/PutLogEvents
 	// The log events in the batch must be in chronological ordered by their
@@ -267,7 +267,7 @@ func (p *logPusher) pushEventBatch(req interface{}) error {
 		return err
 	}
 
-	p.logger.Info("logpusher: publish log events successfully.",
+	p.logger.Debug("logpusher: publish log events successfully.",
 		zap.Int("NumOfLogEvents", len(putLogEventsInput.LogEvents)),
 		zap.Float64("LogEventsSize", float64(logEventBatch.byteTotal)/float64(1024)),
 		zap.Int64("Time", time.Since(startTime).Nanoseconds()/int64(time.Millisecond)))

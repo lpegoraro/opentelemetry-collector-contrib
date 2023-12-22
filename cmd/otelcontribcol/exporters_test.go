@@ -1,22 +1,21 @@
 // Copyright The OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
 
-// Skip tests on Windows temporarily, see https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/11451
-//go:build !windows
-// +build !windows
-
 package main
 
 import (
 	"context"
 	"errors"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/config/configgrpc"
+	"go.opentelemetry.io/collector/config/confighttp"
+	"go.opentelemetry.io/collector/config/configopaque"
 	"go.opentelemetry.io/collector/exporter"
 	"go.opentelemetry.io/collector/exporter/exportertest"
 	"go.opentelemetry.io/collector/exporter/otlpexporter"
@@ -39,6 +38,7 @@ import (
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/elasticsearchexporter"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/f5cloudexporter"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/fileexporter"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/honeycombmarkerexporter"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/influxdbexporter"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/instanaexporter"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/kafkaexporter"
@@ -48,6 +48,7 @@ import (
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/lokiexporter"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/mezmoexporter"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/opencensusexporter"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/opensearchexporter"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/prometheusexporter"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/prometheusremotewriteexporter"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/pulsarexporter"
@@ -57,6 +58,7 @@ import (
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/skywalkingexporter"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/splunkhecexporter"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/sumologicexporter"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/syslogexporter"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/tanzuobservabilityexporter"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/tencentcloudlogserviceexporter"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/zipkinexporter"
@@ -83,6 +85,7 @@ func TestDefaultExporters(t *testing.T) {
 				cfg := expFactories["awscloudwatchlogs"].CreateDefaultConfig().(*awscloudwatchlogsexporter.Config)
 				cfg.Endpoint = "http://" + endpoint
 				cfg.Region = "local"
+
 				// disable queue/retry to validate passing the test data synchronously
 				cfg.QueueSettings.Enabled = false
 				cfg.RetrySettings.Enabled = false
@@ -98,9 +101,10 @@ func TestDefaultExporters(t *testing.T) {
 			exporter: "file",
 			getConfigFn: func() component.Config {
 				cfg := expFactories["file"].CreateDefaultConfig().(*fileexporter.Config)
-				cfg.Path = filepath.Join(t.TempDir(), "random.file")
+				cfg.Path = filepath.Join(t.TempDir(), "file.exporter.random.file")
 				return cfg
 			},
+			skipLifecycle: runtime.GOOS == "windows", // On Windows not all handles are closed when the exporter is shutdown.
 		},
 		{
 			exporter: "kafka",
@@ -132,6 +136,17 @@ func TestDefaultExporters(t *testing.T) {
 				// disable queue/retry to validate passing the test data synchronously
 				cfg.QueueSettings.Enabled = false
 				cfg.RetrySettings.Enabled = false
+				return cfg
+			},
+			expectConsumeErr: true,
+		},
+		{
+			exporter: "opensearch",
+			getConfigFn: func() component.Config {
+				cfg := expFactories["opensearch"].CreateDefaultConfig().(*opensearchexporter.Config)
+				cfg.HTTPClientSettings = confighttp.HTTPClientSettings{
+					Endpoint: "http://" + endpoint,
+				}
 				return cfg
 			},
 			expectConsumeErr: true,
@@ -297,6 +312,7 @@ func TestDefaultExporters(t *testing.T) {
 			getConfigFn: func() component.Config {
 				cfg := expFactories["azuremonitor"].CreateDefaultConfig().(*azuremonitorexporter.Config)
 				cfg.Endpoint = "http://" + endpoint
+				cfg.ConnectionString = configopaque.String("InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint=" + cfg.Endpoint)
 
 				return cfg
 			},
@@ -397,7 +413,7 @@ func TestDefaultExporters(t *testing.T) {
 				cfg := expFactories["f5cloud"].CreateDefaultConfig().(*f5cloudexporter.Config)
 				cfg.Endpoint = "http://" + endpoint
 				cfg.Source = "magic-source"
-				cfg.AuthConfig.CredentialFile = filepath.Join(t.TempDir(), "random.file")
+				cfg.AuthConfig.CredentialFile = filepath.Join(t.TempDir(), "f5cloud.exporter.random.file")
 				// disable queue/retry to validate passing the test data synchronously
 				cfg.QueueSettings.Enabled = false
 				cfg.RetrySettings.Enabled = false
@@ -416,6 +432,18 @@ func TestDefaultExporters(t *testing.T) {
 		{
 			exporter:      "googlecloudpubsub",
 			skipLifecycle: true,
+		},
+		{
+			exporter: "honeycombmarker",
+			getConfigFn: func() component.Config {
+				cfg := expFactories["honeycombmarker"].CreateDefaultConfig().(*honeycombmarkerexporter.Config)
+				cfg.Endpoint = "http://" + endpoint
+				// disable queue to validate passing the test data synchronously
+				cfg.QueueSettings.Enabled = false
+				cfg.RetrySettings.Enabled = false
+				return cfg
+			},
+			expectConsumeErr: true,
 		},
 		{
 			exporter: "influxdb",
@@ -526,6 +554,18 @@ func TestDefaultExporters(t *testing.T) {
 			expectConsumeErr: true,
 		},
 		{
+			exporter: "syslog",
+			getConfigFn: func() component.Config {
+				cfg := expFactories["syslog"].CreateDefaultConfig().(*syslogexporter.Config)
+				cfg.Endpoint = "http://" + endpoint
+				// disable queue to validate passing the test data synchronously
+				cfg.QueueSettings.Enabled = false
+				cfg.RetrySettings.Enabled = false
+				return cfg
+			},
+			expectConsumeErr: true,
+		},
+		{
 			exporter: "tanzuobservability",
 			getConfigFn: func() component.Config {
 				cfg := expFactories["tanzuobservability"].CreateDefaultConfig().(*tanzuobservabilityexporter.Config)
@@ -606,11 +646,23 @@ func verifyExporterLifecycle(t *testing.T, factory exporter.Factory, getConfigFn
 			assert.NotPanics(t, func() {
 				switch e := exp.(type) {
 				case exporter.Logs:
-					err = e.ConsumeLogs(ctx, testdata.GenerateLogsManyLogRecordsSameResource(2))
+					logs := testdata.GenerateLogsManyLogRecordsSameResource(2)
+					if !e.Capabilities().MutatesData {
+						logs.MarkReadOnly()
+					}
+					err = e.ConsumeLogs(ctx, logs)
 				case exporter.Metrics:
-					err = e.ConsumeMetrics(ctx, testdata.GenerateMetricsTwoMetrics())
+					metrics := testdata.GenerateMetricsTwoMetrics()
+					if !e.Capabilities().MutatesData {
+						metrics.MarkReadOnly()
+					}
+					err = e.ConsumeMetrics(ctx, metrics)
 				case exporter.Traces:
-					err = e.ConsumeTraces(ctx, testdata.GenerateTracesTwoSpansSameResource())
+					traces := testdata.GenerateTracesTwoSpansSameResource()
+					if !e.Capabilities().MutatesData {
+						traces.MarkReadOnly()
+					}
+					err = e.ConsumeTraces(ctx, traces)
 				}
 			})
 			if !expectErr {
