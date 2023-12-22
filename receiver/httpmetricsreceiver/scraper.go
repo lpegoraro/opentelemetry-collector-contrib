@@ -1,7 +1,7 @@
 // Copyright The OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
 
-package httpmetricsreceiver // import "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/httpcheckreceiver"
+package httpmetricsreceiver // import "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/httpmetricsreceiver"
 
 import (
 	"context"
@@ -25,7 +25,7 @@ var (
 	httpResponseClasses = map[string]int{"1xx": 1, "2xx": 2, "3xx": 3, "4xx": 4, "5xx": 5}
 )
 
-type httpcheckScraper struct {
+type httpmetricScraper struct {
 	clients  []*http.Client
 	cfg      *Config
 	settings component.TelemetrySettings
@@ -33,7 +33,7 @@ type httpcheckScraper struct {
 }
 
 // start starts the scraper by creating a new HTTP Client on the scraper
-func (h *httpcheckScraper) start(_ context.Context, host component.Host) (err error) {
+func (h *httpmetricScraper) start(_ context.Context, host component.Host) (err error) {
 	for _, target := range h.cfg.Targets {
 		client, clentErr := target.ToClient(host, h.settings)
 		if clentErr != nil {
@@ -45,7 +45,7 @@ func (h *httpcheckScraper) start(_ context.Context, host component.Host) (err er
 }
 
 // scrape connects to the endpoint and produces metrics based on the response
-func (h *httpcheckScraper) scrape(ctx context.Context) (pmetric.Metrics, error) {
+func (h *httpmetricScraper) scrape(ctx context.Context) (pmetric.Metrics, error) {
 	if h.clients == nil || len(h.clients) == 0 {
 		return pmetric.NewMetrics(), errClientNotInit
 	}
@@ -94,8 +94,8 @@ func (h *httpcheckScraper) scrape(ctx context.Context) (pmetric.Metrics, error) 
 	return h.mb.Emit(), nil
 }
 
-func newScraper(conf *Config, settings receiver.CreateSettings) *httpcheckScraper {
-	return &httpcheckScraper{
+func newScraper(conf *Config, settings receiver.CreateSettings) *httpmetricScraper {
+	return &httpmetricScraper{
 		cfg:      conf,
 		settings: settings.TelemetrySettings,
 		mb:       metadata.NewMetricsBuilder(conf.MetricsBuilderConfig, settings),

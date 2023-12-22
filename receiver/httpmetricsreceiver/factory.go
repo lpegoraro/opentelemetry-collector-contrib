@@ -1,7 +1,7 @@
 // Copyright The OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
 
-package httpmetricsreceiver // import "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/httpcheckreceiver"
+package httpmetricsreceiver // import "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/httpmetricsreceiver"
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 	"github.com/open-telemetry/opentelemetry-collector-contrib/receiver/httpcheckreceiver/internal/metadata"
 )
 
-var errConfigNotHTTPCheck = errors.New("config was not a HTTP check receiver config")
+var errConfigNotHTTPCheck = errors.New("config was not a HTTP metric receiver config")
 
 // NewFactory creates a new receiver factory
 func NewFactory() receiver.Factory {

@@ -99,5 +99,5 @@ resourceMetrics:
                   timeUnixNano: "2000000"
             unit: "1"
         scope:
-          name: otelcol/httpcheckreceiver
+          name: otelcol/httpmetricsreceiver
           version: latest

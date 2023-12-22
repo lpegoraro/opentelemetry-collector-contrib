@@ -1,7 +1,7 @@
 // Copyright The OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
 
-package httpmetricsreceiver // import "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/httpcheckreceiver"
+package httpmetricsreceiver // import "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/httpmetricsreceiver"
 
 import (
 	"context"
@@ -34,12 +34,12 @@ func newMockServer(t *testing.T, responseCode int) *httptest.Server {
 func TestScraperStart(t *testing.T) {
 	testcases := []struct {
 		desc        string
-		scraper     *httpcheckScraper
+		scraper     *httpmetricScraper
 		expectError bool
 	}{
 		{
 			desc: "Bad Config",
-			scraper: &httpcheckScraper{
+			scraper: &httpmetricScraper{
 				cfg: &Config{
 					Targets: []*targetConfig{
 						{
@@ -60,7 +60,7 @@ func TestScraperStart(t *testing.T) {
 		},
 		{
 			desc: "Valid Config",
-			scraper: &httpcheckScraper{
+			scraper: &httpmetricScraper{
 				cfg: &Config{
 					Targets: []*targetConfig{
 						{

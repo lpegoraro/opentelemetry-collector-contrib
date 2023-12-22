@@ -33,6 +33,10 @@ Each target has the following properties:
 
 - `endpoint` (required): the URL to be monitored
 - `method` (optional, default: `GET`): The HTTP method used to call the endpoint
+- `follow_redirect` (optional, default: `false`): If true, the receiver will follow redirects
+- `fail_if_not_ssl` (optional, default: `false`): If true, the receiver will notify a failure if the endpoint is not using SSL
+- `contains_text` (optional): If set, the receiver will show a count of the number of times the text appears in the response body
+- `tags` (optional): A map of tags to be added to the metrics produced by this receiver
 
 Additionally, each target supports the client configuration options of [confighttp].
 
