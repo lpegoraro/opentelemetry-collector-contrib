@@ -10,10 +10,10 @@ resourceMetrics:
                     - key: http.url
                       value:
                         stringValue: http://127.0.0.1:8000
-            name: httpcheck.duration
+            name: httpmetric.duration
             unit: ms
           - description: 1 if the check resulted in status_code matching the status_class, otherwise 0.
-            name: httpcheck.status
+            name: httpmetric.status
             sum:
               aggregationTemporality: 2
               dataPoints:
