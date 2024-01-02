@@ -110,7 +110,7 @@ func TestScaperScrape(t *testing.T) {
 			expectedErr: nil,
 			compareOptions: []pmetrictest.CompareMetricsOption{
 				pmetrictest.IgnoreMetricAttributeValue("http.url"),
-				pmetrictest.IgnoreMetricValues("httpcheck.duration"),
+				pmetrictest.IgnoreMetricValues("httpmetric.duration"),
 				pmetrictest.IgnoreMetricDataPointsOrder(),
 				pmetrictest.IgnoreStartTimestamp(),
 				pmetrictest.IgnoreTimestamp(),
@@ -128,7 +128,7 @@ func TestScaperScrape(t *testing.T) {
 			expectedErr: nil,
 			compareOptions: []pmetrictest.CompareMetricsOption{
 				pmetrictest.IgnoreMetricAttributeValue("http.url"),
-				pmetrictest.IgnoreMetricValues("httpcheck.duration"),
+				pmetrictest.IgnoreMetricValues("httpmetric.duration"),
 				pmetrictest.IgnoreMetricDataPointsOrder(),
 				pmetrictest.IgnoreStartTimestamp(),
 				pmetrictest.IgnoreTimestamp(),
@@ -145,7 +145,7 @@ func TestScaperScrape(t *testing.T) {
 			},
 			expectedErr: nil,
 			compareOptions: []pmetrictest.CompareMetricsOption{
-				pmetrictest.IgnoreMetricValues("httpcheck.duration"),
+				pmetrictest.IgnoreMetricValues("httpmetric.duration"),
 				pmetrictest.IgnoreMetricAttributeValue("error.message"),
 				pmetrictest.IgnoreMetricDataPointsOrder(),
 				pmetrictest.IgnoreStartTimestamp(),
@@ -227,7 +227,7 @@ func TestScraperMultipleTargets(t *testing.T) {
 
 	require.NoError(t, pmetrictest.CompareMetrics(expectedMetrics, actualMetrics,
 		pmetrictest.IgnoreMetricAttributeValue("http.url"),
-		pmetrictest.IgnoreMetricValues("httpcheck.duration"),
+		pmetrictest.IgnoreMetricValues("httpmetric.duration"),
 		pmetrictest.IgnoreMetricDataPointsOrder(),
 		pmetrictest.IgnoreStartTimestamp(),
 		pmetrictest.IgnoreTimestamp(),
