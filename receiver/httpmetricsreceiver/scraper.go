@@ -66,9 +66,6 @@ func (h *httpmetricScraper) scrape(ctx context.Context) (pmetric.Metrics, error)
 			defer wg.Done()
 
 			now := pcommon.NewTimestampFromTime(time.Now())
-			if h.cfg.Targets[targetIndex].FollowRedirects {
-
-			}
 			req, err := http.NewRequestWithContext(ctx, h.cfg.Targets[targetIndex].Method, h.cfg.Targets[targetIndex].Endpoint, http.NoBody)
 			if err != nil {
 				h.settings.Logger.Error("failed to create request", zap.String("target endpoint", h.cfg.Targets[targetIndex].Endpoint), zap.Error(err))
@@ -76,19 +73,27 @@ func (h *httpmetricScraper) scrape(ctx context.Context) (pmetric.Metrics, error)
 			}
 
 			start := time.Now()
-			resp, err := targetClient.Do(req)
+			resp, err2 := targetClient.Do(req)
 			mux.Lock()
 			h.mb.RecordHttpmetricDurationDataPoint(now, time.Since(start).Milliseconds(), h.cfg.Targets[targetIndex].Endpoint)
-			if resp.TLS.HandshakeComplete {
-				h.mb.RecordHttpmetricTLSDataPoint(now, int64(1), h.cfg.Targets[targetIndex].Endpoint)
-			} else {
-				h.mb.RecordHttpmetricTLSDataPoint(now, int64(0), h.cfg.Targets[targetIndex].Endpoint)
-			}
+
 			statusCode := 0
-			if err != nil {
-				h.mb.RecordHttpmetricErrorDataPoint(now, int64(1), h.cfg.Targets[targetIndex].Endpoint, err.Error())
+			if err2 != nil {
+				h.mb.RecordHttpmetricErrorDataPoint(now, int64(1), h.cfg.Targets[targetIndex].Endpoint, err2.Error())
 			} else {
 				statusCode = resp.StatusCode
+			}
+
+			if resp != nil {
+				if resp.TLS != nil {
+					if resp.TLS.HandshakeComplete {
+						h.mb.RecordHttpmetricTLSDataPoint(now, int64(1), h.cfg.Targets[targetIndex].Endpoint)
+					} else {
+						h.mb.RecordHttpmetricTLSDataPoint(now, int64(0), h.cfg.Targets[targetIndex].Endpoint)
+					}
+				} else {
+					h.mb.RecordHttpmetricTLSDataPoint(now, int64(0), h.cfg.Targets[targetIndex].Endpoint)
+				}
 			}
 
 			for class, intVal := range httpResponseClasses {
@@ -99,7 +104,7 @@ func (h *httpmetricScraper) scrape(ctx context.Context) (pmetric.Metrics, error)
 				}
 			}
 
-			if err == nil && len(h.cfg.Targets[targetIndex].ContainsText) > 0 {
+			if err2 == nil && len(h.cfg.Targets[targetIndex].ContainsText) > 0 {
 				if body, err := io.ReadAll(resp.Body); err != nil {
 					h.mb.RecordHttpmetricErrorDataPoint(now, int64(1), h.cfg.Targets[targetIndex].Endpoint, err.Error())
 				} else {
@@ -110,7 +115,7 @@ func (h *httpmetricScraper) scrape(ctx context.Context) (pmetric.Metrics, error)
 					}
 				}
 			}
-			if err == nil && len(h.cfg.Targets[targetIndex].Tags) > 0 {
+			if err2 == nil && len(h.cfg.Targets[targetIndex].Tags) > 0 {
 				h.mb.NewResourceBuilder().SetTags(h.cfg.Targets[targetIndex].Tags)
 			}
 			mux.Unlock()
