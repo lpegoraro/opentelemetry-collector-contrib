@@ -23,7 +23,7 @@ func (ms *MetricConfig) Unmarshal(parser *confmap.Conf) error {
 	return nil
 }
 
-// MetricsConfig provides config for httpmetric metrics.
+// MetricsConfig provides config for httpmetrics metrics.
 type MetricsConfig struct {
 	HttpmetricContentCount MetricConfig `mapstructure:"httpmetric.content_count"`
 	HttpmetricDuration     MetricConfig `mapstructure:"httpmetric.duration"`
@@ -71,7 +71,7 @@ func (rac *ResourceAttributeConfig) Unmarshal(parser *confmap.Conf) error {
 	return nil
 }
 
-// ResourceAttributesConfig provides config for httpmetric resource attributes.
+// ResourceAttributesConfig provides config for httpmetrics resource attributes.
 type ResourceAttributesConfig struct {
 	Tags ResourceAttributeConfig `mapstructure:"tags"`
 }
@@ -84,7 +84,7 @@ func DefaultResourceAttributesConfig() ResourceAttributesConfig {
 	}
 }
 
-// MetricsBuilderConfig is a configuration for httpmetric metrics builder.
+// MetricsBuilderConfig is a configuration for httpmetrics metrics builder.
 type MetricsBuilderConfig struct {
 	Metrics            MetricsConfig            `mapstructure:"metrics"`
 	ResourceAttributes ResourceAttributesConfig `mapstructure:"resource_attributes"`
