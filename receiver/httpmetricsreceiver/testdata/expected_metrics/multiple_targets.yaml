@@ -15,10 +15,10 @@ resourceMetrics:
                     - key: http.url
                       value:
                         stringValue: http://127.0.0.1:8000
-            name: httpcheck.duration
+            name: httpmetric.duration
             unit: ms
           - description: 1 if the check resulted in status_code matching the status_class, otherwise 0.
-            name: httpcheck.status
+            name: httpmetric.status
             sum:
               aggregationTemporality: 2
               dataPoints:
@@ -183,6 +183,22 @@ resourceMetrics:
                   startTimeUnixNano: "1000000"
                   timeUnixNano: "2000000"
             unit: "1"
+          - description: 1 if the check was performed over TLS, otherwise 0.
+            name: httpmetric.tls
+            unit: "1"
+            sum:
+              aggregationTemporality: 2
+              dataPoints:
+                - asInt: "0"
+                  attributes:
+                    - key: http.url
+                      value:
+                        stringValue: http://127.0.0.1:8000
+                - asInt: "0"
+                  attributes:
+                    - key: http.url
+                      value:
+                        stringValue: http://127.0.0.1:8000
         scope:
           name: otelcol/httpmetricsreceiver
           version: latest

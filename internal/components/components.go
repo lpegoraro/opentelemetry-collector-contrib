@@ -4,6 +4,7 @@
 package components // import "github.com/open-telemetry/opentelemetry-collector-contrib/internal/components"
 
 import (
+	"github.com/open-telemetry/opentelemetry-collector-contrib/receiver/httpmetricsreceiver"
 	"go.opentelemetry.io/collector/connector"
 	"go.opentelemetry.io/collector/connector/forwardconnector"
 	"go.opentelemetry.io/collector/exporter"
@@ -253,6 +254,7 @@ func Components() (otelcol.Factories, error) {
 		haproxyreceiver.NewFactory(),
 		hostmetricsreceiver.NewFactory(),
 		httpcheckreceiver.NewFactory(),
+		httpmetricsreceiver.NewFactory(),
 		influxdbreceiver.NewFactory(),
 		iisreceiver.NewFactory(),
 		jaegerreceiver.NewFactory(),

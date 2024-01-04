@@ -10,10 +10,10 @@ resourceMetrics:
                     - key: http.url
                       value:
                         stringValue: http://invalid-endpoint
-            name: httpcheck.duration
+            name: httpmetric.duration
             unit: ms
           - description: Records errors occurring during HTTP check.
-            name: httpcheck.error
+            name: httpmetric.error
             sum:
               aggregationTemporality: 2
               dataPoints:
@@ -27,7 +27,7 @@ resourceMetrics:
                         stringValue: http://invalid-endpoint
             unit: '{error}'
           - description: 1 if the check resulted in status_code matching the status_class, otherwise 0.
-            name: httpcheck.status
+            name: httpmetric.status
             sum:
               aggregationTemporality: 2
               dataPoints:
