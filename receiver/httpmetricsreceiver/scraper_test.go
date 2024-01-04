@@ -1,7 +1,7 @@
 // Copyright The OpenTelemetry Authors
 // SPDX-License-Identifier: Apache-2.0
 
-package httpmetricsreceiver // import "github.com/open-telemetry/opentelemetry-collector-contrib/receiver/httpmetricsreceiver"
+package httpmetricsreceiver // import "github.com/lpegoraro/opentelemetry-collector-contrib/receiver/httpmetricsreceiver"
 
 import (
 	"context"

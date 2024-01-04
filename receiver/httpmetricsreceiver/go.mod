@@ -1,10 +1,10 @@
-module github.com/open-telemetry/opentelemetry-collector-contrib/receiver/httpmetricsreceiver
+module github.com/lpegoraro/opentelemetry-collector-contrib/receiver/httpmetricsreceiver
 
 go 1.20
 
 require (
 	github.com/google/go-cmp v0.6.0
-	github.com/open-telemetry/opentelemetry-collector-contrib/internal/coreinternal v0.87.0
+	github.com/open-telemetry/opentelemetry-collector-contrib/internal/coreinternal v0.91.0
 	github.com/open-telemetry/opentelemetry-collector-contrib/pkg/pdatatest v0.91.0
 	github.com/stretchr/testify v1.8.4
 	go.opentelemetry.io/collector/component v0.91.0
