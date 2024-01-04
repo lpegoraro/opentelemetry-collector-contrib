@@ -1,0 +1,31 @@
+default:
+all_set:
+  metrics:
+    httpmetric.content_count:
+      enabled: true
+    httpmetric.duration:
+      enabled: true
+    httpmetric.error:
+      enabled: true
+    httpmetric.status:
+      enabled: true
+    httpmetric.tls:
+      enabled: true
+  resource_attributes:
+    tags:
+      enabled: true
+none_set:
+  metrics:
+    httpmetric.content_count:
+      enabled: false
+    httpmetric.duration:
+      enabled: false
+    httpmetric.error:
+      enabled: false
+    httpmetric.status:
+      enabled: false
+    httpmetric.tls:
+      enabled: false
+  resource_attributes:
+    tags:
+      enabled: false

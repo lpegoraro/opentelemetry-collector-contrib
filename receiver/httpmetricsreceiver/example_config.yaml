@@ -1,0 +1,34 @@
+extensions:
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+receivers:
+  httpmetrics:
+    collection_interval: 1m
+    targets:
+      - endpoint: http://localhost:12312
+        method: GET
+        follow_redirect: true
+        fail_if_not_ssl: true
+        contains_text: ["home", "0.0.1", "logo"]
+        tags: { "env": "prod", "customer": "acme" }
+      - endpoint: http://localhost:12312/login
+        method: GET
+        follow_redirect: false
+        fail_if_not_ssl: true
+        contains_text: [ "login", "0.0.1", "logo" ]
+        tags: { "env": "prod", "customer": "acme" }
+
+
+exporters:
+  debug:
+  prometheus:
+    endpoint: 0.0.0.0:8889
+
+service:
+  pipelines:
+    metrics:
+      receivers: [httpmetrics]
+      exporters: [prometheus, debug]
+
+  extensions: [zpages]

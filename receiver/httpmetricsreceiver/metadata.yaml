@@ -1,0 +1,81 @@
+type: httpmetric
+
+status:
+  class: receiver
+  stability:
+    development: [metrics]
+  distributions: [contrib]
+  warnings: []
+  codeowners:
+    active: [lpegoraro]
+
+resource_attributes:
+  tags:
+    description: Tags associated with the resource that received the request.
+    type: map
+
+attributes:
+  http.url:
+    description: Full HTTP request URL.
+    type: string
+  http.status_code:
+    description: HTTP response status code
+    type: int
+  http.method:
+    description: HTTP request method
+    type: string
+  http.status_class:
+    description: HTTP response status class
+    type: string
+  error.message:
+    description: Error message recorded during check
+    type: string
+  contains_text:
+    description: List of single-word texts to be searched on the response body
+    type: slice
+
+metrics:
+  httpmetric.status:
+    description: 1 if the check resulted in status_code matching the status_class, otherwise 0.
+    enabled: true
+    sum:
+      value_type: int
+      aggregation_temporality: cumulative
+      monotonic: false
+    unit: 1
+    attributes: [http.url, http.status_code, http.method, http.status_class]
+  httpmetric.duration:
+    description: Measures the duration of the HTTP check.
+    enabled: true
+    gauge:
+      value_type: int
+    unit: ms
+    attributes: [http.url]
+  httpmetric.error:
+    description: Records errors occurring during HTTP check.
+    enabled: true
+    sum:
+      value_type: int
+      aggregation_temporality: cumulative
+      monotonic: false
+    unit: "{error}"
+    attributes: [http.url, error.message]
+  httpmetric.content_count:
+    description: Counts the number of hits on each text on config.
+    enabled: true
+    sum:
+      value_type: int
+      aggregation_temporality: cumulative
+      monotonic: true
+    unit: 1
+    attributes: [http.url, contains_text]
+  httpmetric.tls:
+    description: 1 if the check was performed over TLS, otherwise 0.
+    enabled: true
+    sum:
+      value_type: int
+      aggregation_temporality: cumulative
+      monotonic: false
+    unit: 1
+    attributes: [http.url]
+
