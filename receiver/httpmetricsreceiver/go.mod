@@ -1,4 +1,4 @@
-module github.com/open-telemetry/opentelemetry-collector-contrib/receiver/httpmetricsreceiver
+module github.com/lpegoraro/opentelemetry-collector-contrib/receiver/httpmetricsreceiver
 
 go 1.20
 

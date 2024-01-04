@@ -4,7 +4,7 @@
 package components // import "github.com/open-telemetry/opentelemetry-collector-contrib/internal/components"
 
 import (
-	"github.com/open-telemetry/opentelemetry-collector-contrib/receiver/httpmetricsreceiver"
+	"github.com/lpegoraro/opentelemetry-collector-contrib/receiver/httpmetricsreceiver"
 	"go.opentelemetry.io/collector/connector"
 	"go.opentelemetry.io/collector/connector/forwardconnector"
 	"go.opentelemetry.io/collector/exporter"
