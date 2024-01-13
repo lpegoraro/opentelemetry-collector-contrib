@@ -3,10 +3,12 @@
 package main
 
 import (
+	prometheusremotewriteexporter "github.com/lpegoraro/opentelemetry-collector-contrib/exporter/prometheusremotewriteexporter"
 	httpmetricsreceiver "github.com/lpegoraro/opentelemetry-collector-contrib/receiver/httpmetricsreceiver"
 	"go.opentelemetry.io/collector/connector"
 	"go.opentelemetry.io/collector/exporter"
 	debugexporter "go.opentelemetry.io/collector/exporter/debugexporter"
+	otlphttpexporter "go.opentelemetry.io/collector/exporter/otlphttpexporter"
 	"go.opentelemetry.io/collector/extension"
 	"go.opentelemetry.io/collector/otelcol"
 	"go.opentelemetry.io/collector/processor"
@@ -34,6 +36,8 @@ func components() (otelcol.Factories, error) {
 
 	factories.Exporters, err = exporter.MakeFactoryMap(
 		debugexporter.NewFactory(),
+		prometheusremotewriteexporter.NewFactory(),
+		otlphttpexporter.NewFactory(),
 	)
 	if err != nil {
 		return otelcol.Factories{}, err

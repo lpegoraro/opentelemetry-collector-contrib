@@ -5,6 +5,7 @@ module go.opentelemetry.io/collector/cmd/builder
 go 1.20
 
 require (
+	github.com/lpegoraro/opentelemetry-collector-contrib/exporter/prometheusremotewriteexporter v0.91.0
 	github.com/lpegoraro/opentelemetry-collector-contrib/receiver/httpmetricsreceiver v0.87.0
 	github.com/open-telemetry/opentelemetry-collector-contrib/exporter/alibabacloudlogserviceexporter v0.92.0
 	github.com/open-telemetry/opentelemetry-collector-contrib/exporter/awscloudwatchlogsexporter v0.92.0
@@ -535,3 +536,5 @@ require (
 )
 
 replace github.com/lpegoraro/opentelemetry-collector-contrib/receiver/httpmetricsreceiver => ../../receiver/httpmetricsreceiver
+
+replace github.com/lpegoraro/opentelemetry-collector-contrib/exporter/prometheusremotewriteexporter => ../../exporter/prometheusremotewriteexporter
