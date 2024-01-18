@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	Type             = "httpmetric"
+	Type             = "httpmetrics"
 	MetricsStability = component.StabilityLevelDevelopment
 )
 

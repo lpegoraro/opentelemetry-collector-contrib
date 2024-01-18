@@ -59,7 +59,7 @@ linters-settings:
     sections:
       - standard
       - default
-      - prefix(github.com/open-telemetry/opentelemetry-collector-contrib)
+      #- prefix(github.com/open-telemetry/opentelemetry-collector-contrib)
 
   govet:
     # report about shadowed variables
