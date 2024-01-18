@@ -19,9 +19,4 @@ require (
 	github.com/knadh/koanf/providers/confmap v0.1.0 // indirect
 )
 
-
-
-
-
-
 replace github.com/lpegoraro/opentelemetry-collector-contrib/receiver/httpmetricsreceiver => ../../../receiver/httpmetricsreceiver
