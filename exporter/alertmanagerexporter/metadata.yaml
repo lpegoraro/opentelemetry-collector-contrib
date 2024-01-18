@@ -1,9 +1,0 @@
-type: alertmanager
-
-status:
-  class: exporter
-  stability:
-    development: [traces]
-  distributions: [contrib]
-  codeowners:
-    active: [jpkrohling, sokoide, mcube8]
