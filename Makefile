@@ -269,6 +269,7 @@ genotelcontribcol: $(BUILDER)
 	$(BUILDER) --skip-compilation --config cmd/otelcontribcol/builder-config.yaml --output-path cmd/otelcontribcol
 	$(MAKE) -C cmd/otelcontribcol fmt
 
+
 # Build the Collector executable.
 .PHONY: otelcontribcol
 otelcontribcol:

@@ -41,11 +41,12 @@
 
 ---
 
-# OpenTelemetry Collector Contrib
+# OpenTelemetry Collector For Orb
 
-This is a repository for OpenTelemetry Collector components that are not suitable for the  [core repository](https://github.com/open-telemetry/opentelemetry-collector) of the collector. 
+This is a repository for OpenTelemetry Collector components that are not suitable for the  [core repository](https://github.com/open-telemetry/opentelemetry-collector) of the collector, but instead are customized by [orb-community](https://github.com/orb-community) to better fit the needs of the orb project.
 
-The official distributions, core and contrib, are available as part of the [opentelemetry-collector-releases](https://github.com/open-telemetry/opentelemetry-collector-releases) repository. Some of the components in this repository are part of the "core" distribution, such as the Jaeger and Prometheus components, but most of the components here are only available as part of the "contrib" distribution. Users of the OpenTelemetry Collector are also encouraged to build their own custom distributions with the [OpenTelemetry Collector Builder](https://github.com/open-telemetry/opentelemetry-collector/tree/main/cmd/builder), using the components they need from the core repository, the contrib repository, and possibly third-party or internal repositories.
+The official distributions, core and contrib, are available as part of the [opentelemetry-collector-releases](https://github.com/open-telemetry/opentelemetry-collector-releases) 
+repository. This is a custom collector built using the [OpenTelemetry Collector Builder](https://github.com/open-telemetry/opentelemetry-collector/tree/main/cmd/builder), using the components they need from the core repository, the contrib repository, and possibly third-party or internal repositories.
 
 Each component has its own support levels, as defined in the following sections. For each signal that a component supports, there's a stability level, setting the right expectations. It is possible then that a component will be **Stable** for traces but **Alpha** for metrics and **Development** for logs.
 
@@ -59,88 +60,8 @@ Some features are hidden behind feature gates before they are part of the main c
 
 ## Support
 
-Each component is supported either by the community of OpenTelemetry Collector Contrib maintainers, as defined by the GitHub group [@open-telemetry/collector-contrib-maintainer](https://github.com/orgs/open-telemetry/teams/collector-contrib-maintainer), or by specific vendors. See the individual README files for information about the specific components.
+Each component is supported either by the Orb Community maintainers, as defined by the GitHub group [@open-telemetry/collector-contrib-maintainer](https://github.com/orgs/open-telemetry/teams/collector-contrib-maintainer), or by specific vendors. See the individual README files for information about the specific components.
 
 The OpenTelemetry Collector Contrib maintainers may at any time downgrade specific components, including vendor-specific ones, if they are deemed unmaintained or if they pose a risk to the repository and/or binary distribution.
 
 Even though the OpenTelemetry Collector Contrib maintainers are ultimately responsible for the components hosted here, actual support will likely be provided by individual contributors, typically a code owner for the specific component.
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md).
-
-Triagers ([@open-telemetry/collector-contrib-triagers](https://github.com/orgs/open-telemetry/teams/collector-contrib-triagers))
-
-- [Benedikt Bongartz](https://github.com/frzifus), Red Hat
-- [Curtis Robert](https://github.com/crobert-1), Splunk
-- [Goutham Veeramachaneni](https://github.com/gouthamve), Grafana
-- [Jared Tan](https://github.com/JaredTan95), DaoCloud
-- [Matt Wear](https://github.com/mwear), Lightstep
-- [Murphy Chen](https://github.com/Frapschen), DaoCloud
-- Actively seeking contributors to triage issues
-
-Emeritus Triagers:
-
-- [Alolita Sharma](https://github.com/alolita), AWS
-- [Gabriel Aszalos](https://github.com/gbbr), DataDog
-- [Punya Biswal](https://github.com/punya), Google
-- [Steve Flanders](https://github.com/flands), Splunk
-
-Approvers ([@open-telemetry/collector-contrib-approvers](https://github.com/orgs/open-telemetry/teams/collector-contrib-approvers)):
-
-- [Andrzej Stencel](https://github.com/astencel-sumo), Sumo Logic
-- [Anthony Mirabella](https://github.com/Aneurysm9), AWS
-- [Antoine Toulme](https://github.com/atoulme), Splunk
-- [Bryan Aguilar](https://github.com/bryan-aguilar), AWS
-- [David Ashpole](https://github.com/dashpole), Google
-- [Yang Song](https://github.com/songy23), DataDog
-- [Ziqi Zhao](https://github.com/fatsheep9146), Alibaba
-
-Emeritus Approvers:
-
-- [Przemek Maciolek](https://github.com/pmm-sumo)
-- [Ruslan Kovalov](https://github.com/kovrus)
-
-Maintainers ([@open-telemetry/collector-contrib-maintainer](https://github.com/orgs/open-telemetry/teams/collector-contrib-maintainer)):
-
-- [Alex Boten](https://github.com/codeboten), ServiceNow
-- [Bogdan Drutu](https://github.com/bogdandrutu), Snowflake
-- [Daniel Jaglowski](https://github.com/djaglowski), observIQ
-- [Dmitrii Anoshin](https://github.com/dmitryax), Splunk
-- [Evan Bradley](https://github.com/evan-bradley), Dynatrace
-- [Juraci Paixão Kröhling](https://github.com/jpkrohling), Grafana Labs
-- [Pablo Baeyens](https://github.com/mx-psi), DataDog
-- [Sean Marciniak](https://github.com/MovieStoreGuy), Atlassian
-- [Tyler Helmuth](https://github.com/TylerHelmuth), Honeycomb
-
-Emeritus Maintainers
-
-- [Tigran Najaryan](https://github.com/tigrannajaryan), Splunk
-
-Learn more about roles in the [community repository](https://github.com/open-telemetry/community/blob/main/community-membership.md).
-
-## PRs and Reviews
-
-When creating a PR please follow the process [described
-here](https://github.com/open-telemetry/opentelemetry-collector/blob/main/CONTRIBUTING.md#how-to-structure-prs-to-get-expedient-reviews).
-
-News PRs will be automatically associated with the reviewers based on
-[CODEOWNERS](.github/CODEOWNERS). PRs will be also automatically assigned to one of the
-maintainers or approvers for facilitation.
-
-The facilitator is responsible for helping the PR author and reviewers to make progress
-or if progress cannot be made for closing the PR.
-
-If the reviewers do not have approval rights the facilitator is also responsible
-for the official approval that is required for the PR to be merged and if the facilitator
-is a maintainer they are responsible for merging the PR as well.
-
-The facilitator is not required to perform a thorough review, but they are encouraged to
-enforce Collector best practices and consistency across the codebase and component
-behavior. The facilitators will typically rely on codeowner's detailed review of the code
-when making the final approval decision. 
-
-We recommend maintainers and approvers to keep an eye on the
-[project board](https://github.com/orgs/open-telemetry/projects/3). All newly created
-PRs are automatically added to this board. (If you don't see the PR on the board you
-may need to add it manually by setting the Project field in the PR view).

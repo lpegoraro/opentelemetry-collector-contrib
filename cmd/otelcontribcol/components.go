@@ -3,8 +3,8 @@
 package main
 
 import (
-	prometheusremotewriteexporter "github.com/lpegoraro/opentelemetry-collector-contrib/exporter/prometheusremotewriteexporter"
 	httpmetricsreceiver "github.com/lpegoraro/opentelemetry-collector-contrib/receiver/httpmetricsreceiver"
+	prometheusremotewriteexporter "github.com/open-telemetry/opentelemetry-collector-contrib/exporter/prometheusremotewriteexporter"
 	"go.opentelemetry.io/collector/connector"
 	"go.opentelemetry.io/collector/exporter"
 	debugexporter "go.opentelemetry.io/collector/exporter/debugexporter"
